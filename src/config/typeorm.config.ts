@@ -2,15 +2,9 @@ import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import {JobAuditModel} from '@volontariapp/workers';
 
 export function getTypeOrmConfig(): TypeOrmModuleOptions {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error('DATABASE_URL environment variable is required');
-  }
-
   return {
     type: 'postgres',
-    url: databaseUrl,
+    url: process.env.DATABASE_URL ?? 'postgres://user:password@localhost:5432/ms_user',
     entities: [JobAuditModel],
     synchronize: false,
     logging: process.env.TYPEORM_LOGGING === 'true',
