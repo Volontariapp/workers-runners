@@ -1,10 +1,14 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { BullModule } from '@nestjs/bullmq';
+import { DatabaseModule } from './database/database.module';
+import { WorkersModule } from './workers/workers.module';
+import { getBullConfig } from './config/bull.config';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    BullModule.forRoot(getBullConfig()),
+    DatabaseModule,
+    WorkersModule,
+  ],
 })
 export class AppModule {}
