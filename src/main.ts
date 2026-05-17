@@ -9,16 +9,9 @@ async function bootstrap() {
     logger: ['error', 'warn'],
   });
 
+  app.enableShutdownHooks();
+
   logger.info('Application context created');
-
-  const handleShutdown = async (signal: string) => {
-    logger.info(`Received ${signal}, starting graceful shutdown...`);
-    await app.close();
-    process.exit(0);
-  };
-
-  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
-  process.on('SIGINT', () => handleShutdown('SIGINT'));
 
   logger.info('Workers runner started');
 }
