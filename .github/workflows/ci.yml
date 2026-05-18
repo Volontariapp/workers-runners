@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Build & Lint (${{ matrix.worker }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [worker-user, worker-event, worker-post, worker-social]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+          cache-dependency-path: '${{ matrix.worker }}/yarn.lock'
+      
+      - name: Install dependencies
+        working-directory: ${{ matrix.worker }}
+        run: yarn install
+
+      - name: Lint
+        working-directory: ${{ matrix.worker }}
+        run: yarn lint
+
+      - name: Build
+        working-directory: ${{ matrix.worker }}
+        run: yarn build
+
+  deploy:
+    name: Update Deploy Submodule
+    runs-on: ubuntu-latest
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Deploy Repository
+        uses: actions/checkout@v4
+        with:
+          repository: Volontariapp/deploy
+          token: ${{ secrets.ORG_REPO_TOKEN }}
+          path: deploy
+
+      - name: Update submodule
+        env:
+          ORG_REPO_TOKEN: ${{ secrets.ORG_REPO_TOKEN }}
+          SERVICE: "workers-runners"
+          SERVICE_SHA: "${{ github.sha }}"
+        run: |
+          cd deploy
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global url."https://x-access-token:${ORG_REPO_TOKEN}@github.com/".insteadOf "git@github.com:"
+          
+          git submodule update --init "$SERVICE"
+          git -C "$SERVICE" fetch origin "$SERVICE_SHA"
+          git -C "$SERVICE" checkout "$SERVICE_SHA"
+          
+          if ! git diff --quiet "$SERVICE"; then
+            git add "$SERVICE"
+            git commit -m "chore(deploy): update $SERVICE submodule to ${SERVICE_SHA:0:7}"
+            git pull --rebase origin main && git push origin main
+          else
+            echo "No changes to deploy"
+          fi
