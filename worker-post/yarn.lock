@@ -1677,7 +1677,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volontariapp/health-check@npm:^1.0.1":
+"@volontariapp/health-check@npm:1.0.2, @volontariapp/health-check@npm:^1.0.1":
   version: 1.0.2
   resolution: "@volontariapp/health-check@npm:1.0.2"
   dependencies:
@@ -1695,17 +1695,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volontariapp/messaging@npm:1.1.2":
-  version: 1.1.2
-  resolution: "@volontariapp/messaging@npm:1.1.2"
-  dependencies:
-    "@volontariapp/contracts": "npm:4.0.10"
-    "@volontariapp/database": "npm:1.15.2"
-  checksum: 10c0/4a601f602f2cc397d04871a55aa58dcd15c5b9e8b74ca94c3e6644715c0ce7d7a5c93fefc17797b71ec2e2640f94baab22817caa9b7717134a139b9912ab88c2
-  languageName: node
-  linkType: hard
-
-"@volontariapp/messaging@npm:^1.2.0":
+"@volontariapp/messaging@npm:1.2.0, @volontariapp/messaging@npm:^1.2.0":
   version: 1.2.0
   resolution: "@volontariapp/messaging@npm:1.2.0"
   dependencies:
@@ -1731,18 +1721,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volontariapp/workers@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@volontariapp/workers@npm:0.2.0"
+"@volontariapp/workers@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@volontariapp/workers@npm:1.0.0"
   dependencies:
+    "@volontariapp/bridge": "npm:1.0.2"
     "@volontariapp/config": "npm:3.1.0"
+    "@volontariapp/health-check": "npm:1.0.2"
     "@volontariapp/logger": "npm:0.2.4"
-    "@volontariapp/messaging": "npm:1.1.2"
+    "@volontariapp/messaging": "npm:1.2.0"
   peerDependencies:
     "@nestjs/bullmq": ^11.0.0
     "@nestjs/common": ^11.0.0
     bullmq: ^5.0.0
-  checksum: 10c0/7de071a79cdac9f57dc50a9b56727b80f77123a9c340cdf2a11b2e53f6b80dddda8bf536a8d29032f4a5d91068cdcce88f8cf944013cc39ff34ce3e315aac1f0
+  checksum: 10c0/a7a2dafdb62af7de245f68fe04803ec20d6d8e4a917f28866184d983bdd77addf2bb17cc9df4f2677db06bce323dddcf586b56f2ac923f66a8339ad88d00d501
   languageName: node
   linkType: hard
 
@@ -5814,7 +5806,7 @@ __metadata:
     "@volontariapp/logger": "npm:^0.2.4"
     "@volontariapp/messaging": "npm:^1.2.0"
     "@volontariapp/testing": "npm:^1.0.0"
-    "@volontariapp/workers": "npm:^0.2.0"
+    "@volontariapp/workers": "npm:^1.0.0"
     bullmq: "npm:^5.76.5"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:^0.15.1"
