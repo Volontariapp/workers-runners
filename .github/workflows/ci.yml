@@ -75,12 +75,12 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global url."https://x-access-token:${ORG_REPO_TOKEN}@github.com/".insteadOf "git@github.com:"
           
-          git submodule update --init "$SERVICE"
-          git -C "$SERVICE" fetch origin "$SERVICE_SHA"
-          git -C "$SERVICE" checkout "$SERVICE_SHA"
+          git submodule update --init "submodules/$SERVICE"
+          git -C "submodules/$SERVICE" fetch origin "$SERVICE_SHA"
+          git -C "submodules/$SERVICE" checkout "$SERVICE_SHA"
           
-          if ! git diff --quiet "$SERVICE"; then
-            git add "$SERVICE"
+          if ! git diff --quiet "submodules/$SERVICE"; then
+            git add "submodules/$SERVICE"
             git commit -m "chore(deploy): update $SERVICE submodule to ${SERVICE_SHA:0:7}"
             git pull --rebase origin main && git push origin main
           else
