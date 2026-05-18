@@ -61,7 +61,8 @@ const logger = new Logger({
       provide: JobAuditRepository,
       useFactory: (postgres: PostgresProvider) => {
         const datasource = postgres.getDriver();
-        return datasource.getRepository(JobAuditModel);
+        const typeormRepo = datasource.getRepository(JobAuditModel);
+        return new JobAuditRepository(typeormRepo);
       },
       inject: [PostgresProvider],
     },
