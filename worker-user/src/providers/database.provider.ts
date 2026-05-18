@@ -2,7 +2,8 @@ import { PostgresProvider } from '@volontariapp/bridge';
 import type { PostgresConfig, IPostgresConfig } from '@volontariapp/config';
 import type { Logger } from '@volontariapp/logger';
 import { PostgresBridgeHealthProvider } from '@volontariapp/health-check';
-import { JobAuditModel, JobAuditEntity } from '@volontariapp/workers';
+import { JobAuditEntity } from '@volontariapp/workers';
+import { JobAuditModel } from '@volontariapp/database';
 import { databaseMapper } from '@volontariapp/database';
 import { instanceToPlain } from 'class-transformer';
 

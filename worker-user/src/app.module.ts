@@ -1,7 +1,8 @@
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
 import { loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
-import { JobAuditModel, JobAuditRepository } from '@volontariapp/workers';
+import { JobAuditRepository } from '@volontariapp/workers';
+import { JobAuditModel } from '@volontariapp/database';
 import { CustomConfig } from './config/custom-config.js';
 import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 import { initDatabase } from './providers/database.provider.js';
