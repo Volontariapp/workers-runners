@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import {
-  JobMessagingType,
-  type ISendWelcomeEmailPayload,
-} from '@volontariapp/messaging';
-import type { Job } from 'bullmq';
+import { JobMessagingType } from '@volontariapp/messaging';
+import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../job-handler.interface.js';
 
 @Injectable()
@@ -16,14 +13,12 @@ export class SendWelcomeEmailHandler implements IJobHandler<
   });
   readonly jobType = JobMessagingType.SEND_WELCOME_EMAIL;
 
-  async handle(job: Job<ISendWelcomeEmailPayload>): Promise<void> {
-    const { userId, email, firstName } = job.data;
+  async handle(job: JobOf<typeof JobMessagingType.SEND_WELCOME_EMAIL>): Promise<void> {
+    const { userId, email } = job.data.payload;
 
     this.logger.info('Sending welcome email', { userId, email });
 
     await Promise.resolve();
-
-    void firstName;
 
     this.logger.info('Welcome email sent', { userId });
   }
