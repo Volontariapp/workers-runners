@@ -1,10 +1,10 @@
 {
   "db": {
     "host": "localhost",
-    "port": 5432,
+    "port": 5433,
     "username": "user",
     "password": "password",
-    "database": "ms_user",
+    "database": "ms_post",
     "maxPoolSize": 10,
     "ssl": false
   },

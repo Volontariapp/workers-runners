@@ -1,10 +1,10 @@
 {
   "db": {
     "host": "localhost",
-    "port": 5432,
+    "port": 5435,
     "username": "user",
     "password": "password",
-    "database": "ms_user",
+    "database": "ms_social",
     "maxPoolSize": 10,
     "ssl": false
   },
