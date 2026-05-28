@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import {
-  JobMessagingType,
-  type IPublishEventPayload,
-} from '@volontariapp/messaging';
-import type { Job } from 'bullmq';
-import type { IJobHandler } from '../job-handler.interface.js';
+import { JobMessagingType } from '@volontariapp/messaging';
+import type { JobOf } from '@volontariapp/workers';
+import type { IJobHandler } from './interfaces/job-handler.interface.js';
 
 @Injectable()
 export class PublishEventHandler implements IJobHandler<
@@ -16,8 +13,10 @@ export class PublishEventHandler implements IJobHandler<
   });
   readonly jobType = JobMessagingType.PUBLISH_EVENT;
 
-  async handle(job: Job<IPublishEventPayload>): Promise<void> {
-    const { eventId, creatorId } = job.data;
+  async handle(
+    job: JobOf<typeof JobMessagingType.PUBLISH_EVENT>,
+  ): Promise<void> {
+    const { eventId, creatorId } = job.data.payload;
     this.logger.info('Publishing event', { eventId, creatorId });
     await Promise.resolve();
     this.logger.info('Event published', { eventId });

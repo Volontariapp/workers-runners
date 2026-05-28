@@ -8,9 +8,23 @@ import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
 import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
-import { SendWelcomeEmailHandler } from './workers/handlers/send-welcome-email.handler.js';
-import { ResetPasswordHandler } from './workers/handlers/reset-password.handler.js';
+import { SendWelcomeEmailHandler } from './handlers/send-welcome-email.handler.js';
+import { ResetPasswordHandler } from './handlers/reset-password.handler.js';
+import { FallbackGetMyFollowsHandler } from './handlers/fallback/fallback-get-my-follows.handler.js';
+import { FallbackGetMyFollowersHandler } from './handlers/fallback/fallback-get-my-followers.handler.js';
+import { FallbackGetPostLikersHandler } from './handlers/fallback/fallback-get-post-likers.handler.js';
+import { FallbackGetEventParticipantsHandler } from './handlers/fallback/fallback-get-event-participants.handler.js';
+import { FallbackCreateBadgeHandler } from './handlers/fallback/fallback-create-badge.handler.js';
+import { FallbackUpdateBadgeHandler } from './handlers/fallback/fallback-update-badge.handler.js';
+import { FallbackDeleteBadgeHandler } from './handlers/fallback/fallback-delete-badge.handler.js';
+import { FallbackSignUpHandler } from './handlers/fallback/fallback-sign-up.handler.js';
+import { FallbackUpdateUserHandler } from './handlers/fallback/fallback-update-user.handler.js';
+import { FallbackDeleteUserHandler } from './handlers/fallback/fallback-delete-user.handler.js';
+import { FallbackAddBadgeToUserHandler } from './handlers/fallback/fallback-add-badge-to-user.handler.js';
+import { FallbackRemoveBadgeFromUserHandler } from './handlers/fallback/fallback-remove-badge-from-user.handler.js';
+import { FallbackIncrementImpactScoreHandler } from './handlers/fallback/fallback-increment-impact-score.handler.js';
 import { UserWorker } from './workers/user.worker.js';
+import { FallbackUserWorker } from './workers/fallback-user.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { UserQueue } from '@volontariapp/messaging';
 
@@ -69,7 +83,21 @@ const logger = new Logger({
     },
     SendWelcomeEmailHandler,
     ResetPasswordHandler,
+    FallbackGetMyFollowsHandler,
+    FallbackGetMyFollowersHandler,
+    FallbackGetPostLikersHandler,
+    FallbackGetEventParticipantsHandler,
+    FallbackCreateBadgeHandler,
+    FallbackUpdateBadgeHandler,
+    FallbackDeleteBadgeHandler,
+    FallbackSignUpHandler,
+    FallbackUpdateUserHandler,
+    FallbackDeleteUserHandler,
+    FallbackAddBadgeToUserHandler,
+    FallbackRemoveBadgeFromUserHandler,
+    FallbackIncrementImpactScoreHandler,
     UserWorker,
+    FallbackUserWorker,
   ],
 })
 export class AppModule implements OnApplicationShutdown {

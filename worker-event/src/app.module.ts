@@ -9,7 +9,19 @@ import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
 import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
 import { PublishEventHandler } from './workers/handlers/publish-event.handler.js';
+import { FallbackGetUserCreatedEventsHandler } from './workers/handlers/fallback/fallback-get-user-created-events.handler.js';
+import { FallbackGetUserParticipatedEventsHandler } from './workers/handlers/fallback/fallback-get-user-participated-events.handler.js';
+import { FallbackGetUserWishedEventsHandler } from './workers/handlers/fallback/fallback-get-user-wished-events.handler.js';
+import { FallbackCreateEventHandler } from './workers/handlers/fallback/fallback-create-event.handler.js';
+import { FallbackUpdateEventHandler } from './workers/handlers/fallback/fallback-update-event.handler.js';
+import { FallbackChangeEventStateHandler } from './workers/handlers/fallback/fallback-change-event-state.handler.js';
+import { FallbackManageRequirementsHandler } from './workers/handlers/fallback/fallback-manage-requirements.handler.js';
+import { FallbackDeleteEventHandler } from './workers/handlers/fallback/fallback-delete-event.handler.js';
+import { FallbackCreateTagHandler } from './workers/handlers/fallback/fallback-create-tag.handler.js';
+import { FallbackUpdateTagHandler } from './workers/handlers/fallback/fallback-update-tag.handler.js';
+import { FallbackDeleteTagHandler } from './workers/handlers/fallback/fallback-delete-tag.handler.js';
 import { EventWorker } from './workers/event.worker.js';
+import { FallbackEventWorker } from './workers/fallback-event.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { EventsQueue } from '@volontariapp/messaging';
 
@@ -67,7 +79,19 @@ const logger = new Logger({
       inject: [PostgresProvider],
     },
     PublishEventHandler,
+    FallbackGetUserCreatedEventsHandler,
+    FallbackGetUserParticipatedEventsHandler,
+    FallbackGetUserWishedEventsHandler,
+    FallbackCreateEventHandler,
+    FallbackUpdateEventHandler,
+    FallbackChangeEventStateHandler,
+    FallbackManageRequirementsHandler,
+    FallbackDeleteEventHandler,
+    FallbackCreateTagHandler,
+    FallbackUpdateTagHandler,
+    FallbackDeleteTagHandler,
     EventWorker,
+    FallbackEventWorker,
   ],
 })
 export class AppModule implements OnApplicationShutdown {

@@ -3,9 +3,9 @@ import { Processor } from '@nestjs/bullmq';
 import { BaseWorker, JobAuditRepository } from '@volontariapp/workers';
 import type { JobOf } from '@volontariapp/workers';
 import { type JobMessagingType, UserQueue } from '@volontariapp/messaging';
-import { SendWelcomeEmailHandler } from './handlers/send-welcome-email.handler.js';
-import { ResetPasswordHandler } from './handlers/reset-password.handler.js';
-import type { IJobHandler } from './job-handler.interface.js';
+import { SendWelcomeEmailHandler } from '../handlers/send-welcome-email.handler.js';
+import { ResetPasswordHandler } from '../handlers/reset-password.handler.js';
+import type { IJobHandler } from '../handlers/interfaces/job-handler.interface.js';
 
 @Injectable()
 @Processor(UserQueue.USER)
