@@ -24,6 +24,7 @@ import { EventWorker } from './workers/event.worker.js';
 import { FallbackEventWorker } from './workers/fallback-event.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { EventsQueue } from '@volontariapp/messaging';
+import { EventService, PostgresEventRepository } from '@volontariapp/domain-event';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
@@ -47,6 +48,8 @@ const logger = new Logger({
     }),
   ],
   providers: [
+    PostgresEventRepository,
+    EventService,
     {
       provide: CustomConfig,
       useValue: config,
