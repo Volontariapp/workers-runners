@@ -24,7 +24,16 @@ import { EventWorker } from './workers/event.worker.js';
 import { FallbackEventWorker } from './workers/fallback-event.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { EventsQueue } from '@volontariapp/messaging';
-import { EventService, PostgresEventRepository } from '@volontariapp/domain-event';
+import {
+  EventService,
+  PostgresEventRepository,
+  EventModel,
+  TagService,
+  TagModel,
+  PostgresTagRepository,
+  GeocodingService,
+  OpenStreetMapStrategy,
+} from '@volontariapp/domain-event';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
@@ -48,8 +57,33 @@ const logger = new Logger({
     }),
   ],
   providers: [
-    PostgresEventRepository,
+    {
+      provide: PostgresEventRepository,
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        const typeormRepo = datasource.getRepository(EventModel);
+        return new PostgresEventRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
+      provide: PostgresTagRepository,
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        const typeormRepo = datasource.getRepository(TagModel);
+        return new PostgresTagRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
+      provide: GeocodingService,
+      useFactory: () => {
+        const primaryStrategy = new OpenStreetMapStrategy('worker-event', true);
+        return new GeocodingService(primaryStrategy, primaryStrategy);
+      },
+    },
     EventService,
+    TagService,
     {
       provide: CustomConfig,
       useValue: config,
