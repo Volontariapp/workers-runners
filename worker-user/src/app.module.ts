@@ -1,4 +1,5 @@
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
+import { JwtService } from '@volontariapp/auth';
 import { loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
 import { JobAuditRepository } from '@volontariapp/workers';
@@ -27,6 +28,15 @@ import { UserWorker } from './workers/user.worker.js';
 import { FallbackUserWorker } from './workers/fallback-user.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { UserQueue } from '@volontariapp/messaging';
+import {
+  AuthService,
+  BadgeService,
+  UserService,
+  PostgresUserRepository,
+  PostgresBadgeRepository,
+  UserModel,
+  BadgeModel,
+} from '@volontariapp/domain-user';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
@@ -81,6 +91,37 @@ const logger = new Logger({
       },
       inject: [PostgresProvider],
     },
+    {
+      provide: PostgresUserRepository,
+      useFactory: (
+        postgresProvider: PostgresProvider,
+        customConfig: CustomConfig,
+      ) => {
+        const dataSource = postgresProvider.getDriver();
+        const typeormRepo = dataSource.getRepository(UserModel);
+        return new PostgresUserRepository(
+          typeormRepo,
+          customConfig.emailEncryptionSecret,
+        );
+      },
+      inject: [PostgresProvider, CustomConfig],
+    },
+    {
+      provide: PostgresBadgeRepository,
+      useFactory: (postgresProvider: PostgresProvider) => {
+        const dataSource = postgresProvider.getDriver();
+        const typeormRepo = dataSource.getRepository(BadgeModel);
+        return new PostgresBadgeRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
+      provide: JwtService,
+      useFactory: (customConfig: CustomConfig) => {
+        return new JwtService(customConfig.auth);
+      },
+      inject: [CustomConfig],
+    },
     SendWelcomeEmailHandler,
     ResetPasswordHandler,
     FallbackGetMyFollowsHandler,
@@ -98,6 +139,9 @@ const logger = new Logger({
     FallbackIncrementImpactScoreHandler,
     UserWorker,
     FallbackUserWorker,
+    AuthService,
+    BadgeService,
+    UserService,
   ],
 })
 export class AppModule implements OnApplicationShutdown {

@@ -12,6 +12,14 @@ import { PublishPostHandler } from './workers/handlers/publish-post.handler.js';
 import { PostWorker } from './workers/post.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { PostQueue } from '@volontariapp/messaging';
+import {
+  PostService,
+  CommentService,
+  PostgresPostRepository,
+  PostgresCommentRepository,
+  PostModel,
+  CommentModel,
+} from '@volontariapp/domain-post';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
@@ -66,8 +74,28 @@ const logger = new Logger({
       },
       inject: [PostgresProvider],
     },
+    {
+      provide: PostgresPostRepository,
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        const typeormRepo = datasource.getRepository(PostModel);
+        return new PostgresPostRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
+      provide: PostgresCommentRepository,
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        const typeormRepo = datasource.getRepository(CommentModel);
+        return new PostgresCommentRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
     PublishPostHandler,
     PostWorker,
+    PostService,
+    CommentService,
   ],
 })
 export class AppModule implements OnApplicationShutdown {

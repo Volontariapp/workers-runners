@@ -18,5 +18,9 @@
     "password": "password",
     "dbIndex": 0
   },
+  "auth": {
+    "internalPrivateKeyPath": "certs/internal.key",
+    "internalExpiresIn": "1h"
+  },
   "port": 4104
 }

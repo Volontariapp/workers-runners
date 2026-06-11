@@ -7,11 +7,33 @@ import { CustomConfig } from './config/custom-config.js';
 import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
-import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
+import {
+  PostgresProvider,
+  RedisProvider,
+  Neo4jProvider,
+} from '@volontariapp/bridge';
+import {
+  Neo4jBridgeModule,
+  NestNeo4jProvider,
+} from '@volontariapp/bridge-nest';
 import { FollowUserHandler } from './workers/handlers/follow-user.handler.js';
 import { SocialWorker } from './workers/social.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { SocialQueue } from '@volontariapp/messaging';
+import {
+  SocialUserService,
+  RelationshipService,
+  PublicationService,
+  InteractionService,
+  ParticipationService,
+  EventPostLinkService,
+  Neo4jSocialUserRepository,
+  Neo4jRelationshipRepository,
+  Neo4jPublicationRepository,
+  Neo4jInteractionRepository,
+  Neo4jParticipationRepository,
+  Neo4jEventPostLinkRepository,
+} from '@volontariapp/domain-social';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
@@ -33,6 +55,7 @@ const logger = new Logger({
     BullModule.registerQueue({
       name: SocialQueue.SOCIAL,
     }),
+    Neo4jBridgeModule.register(config.neo4j),
   ],
   providers: [
     {
@@ -68,6 +91,18 @@ const logger = new Logger({
     },
     FollowUserHandler,
     SocialWorker,
+    SocialUserService,
+    RelationshipService,
+    PublicationService,
+    InteractionService,
+    ParticipationService,
+    EventPostLinkService,
+    Neo4jSocialUserRepository,
+    Neo4jRelationshipRepository,
+    Neo4jPublicationRepository,
+    Neo4jInteractionRepository,
+    Neo4jParticipationRepository,
+    Neo4jEventPostLinkRepository,
   ],
 })
 export class AppModule implements OnApplicationShutdown {
@@ -75,6 +110,7 @@ export class AppModule implements OnApplicationShutdown {
     @Inject(PostgresProvider)
     private readonly postgresProvider: PostgresProvider,
     @Inject(RedisProvider) private readonly redisProvider: RedisProvider,
+    @Inject(NestNeo4jProvider) private readonly neo4jProvider: Neo4jProvider,
   ) {}
 
   async onApplicationShutdown(signal?: string) {
@@ -84,8 +120,11 @@ export class AppModule implements OnApplicationShutdown {
     await Promise.all([
       this.postgresProvider.disconnect(),
       this.redisProvider.disconnect(),
+      this.neo4jProvider.disconnect(),
     ]);
-    logger.info('Database and Redis connection pools closed successfully.');
+    logger.info(
+      'Database, Redis and Neo4j connection pools closed successfully.',
+    );
   }
 }
 export { logger };

@@ -12,5 +12,9 @@
     "password": "REDIS_PASSWORD",
     "dbIndex": "REDIS_DB_INDEX"
   },
+  "auth": {
+    "internalPrivateKeyPath": "AUTH_INTERNAL_PRIVATE_KEY_PATH",
+    "internalExpiresIn": "AUTH_INTERNAL_EXPIRES_IN"
+  },
   "port": "PORT"
 }

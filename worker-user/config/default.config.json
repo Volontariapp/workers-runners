@@ -18,5 +18,16 @@
     "password": "password",
     "dbIndex": 0
   },
+  "auth": {
+    "accessTokenPublicKeyPath": "certs/access.pub",
+    "accessTokenPrivateKeyPath": "certs/access.key",
+    "accessTokenExpiresIn": "15m",
+    "refreshTokenPublicKeyPath": "certs/refresh.pub",
+    "refreshTokenPrivateKeyPath": "certs/refresh.key",
+    "refreshTokenExpiresIn": "7d",
+    "internalPrivateKeyPath": "certs/internal.key",
+    "internalExpiresIn": "1h"
+  },
+  "emailEncryptionSecret": "IMTW5JaRnLjHREg5HPxhufbkO5Z1NCYgG7tq+z/DYMw=",
   "port": 4102
 }

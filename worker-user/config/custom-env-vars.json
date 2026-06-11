@@ -12,5 +12,12 @@
     "password": "REDIS_PASSWORD",
     "dbIndex": "REDIS_DB_INDEX"
   },
+  "auth": {
+    "accessTokenPublicKeyPath": "AUTH_ACCESS_TOKEN_PUBLIC_KEY_PATH",
+    "refreshTokenPublicKeyPath": "AUTH_REFRESH_TOKEN_PUBLIC_KEY_PATH",
+    "internalPrivateKeyPath": "AUTH_INTERNAL_PRIVATE_KEY_PATH",
+    "internalExpiresIn": "AUTH_INTERNAL_EXPIRES_IN"
+  },
+  "emailEncryptionSecret": "EMAIL_ENCRYPTION_SECRET",
   "port": "PORT"
 }
