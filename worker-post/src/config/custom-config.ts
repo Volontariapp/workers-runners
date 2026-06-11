@@ -1,33 +1,14 @@
-import {
-  IsDefined,
-  ValidateNested,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsDefined, ValidateNested, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import {
-  BaseConfig,
-  PostgresConfig,
-  RedisConfig,
-  GatewayAuthConfig,
-} from '@volontariapp/config';
+import { BaseConfig, PostgresConfig, RedisConfig } from '@volontariapp/config';
 
-export class ExtendedAuthConfig extends GatewayAuthConfig {
-  @IsOptional()
+export class WorkerAuthConfig {
+  @IsDefined()
   @IsString()
-  accessTokenPrivateKeyPath?: string;
+  internalPrivateKeyPath!: string;
 
-  @IsOptional()
-  @IsString()
-  refreshTokenPrivateKeyPath?: string;
-
-  @IsOptional()
-  @IsString()
-  accessTokenExpiresIn?: string | number;
-
-  @IsOptional()
-  @IsString()
-  refreshTokenExpiresIn?: string | number;
+  @IsDefined()
+  internalExpiresIn!: string | number;
 }
 
 export class CustomConfig extends BaseConfig {
@@ -43,6 +24,6 @@ export class CustomConfig extends BaseConfig {
 
   @IsDefined()
   @ValidateNested()
-  @Type(() => ExtendedAuthConfig)
-  auth!: ExtendedAuthConfig;
+  @Type(() => WorkerAuthConfig)
+  auth!: WorkerAuthConfig;
 }
