@@ -33,6 +33,9 @@ import {
   PostgresTagRepository,
   GeocodingService,
   OpenStreetMapStrategy,
+  RequirementService,
+  RequirementModel,
+  PostgresRequirementRepository,
 } from '@volontariapp/domain-event';
 
 const configDir = resolveConfigDirectory();
@@ -76,6 +79,15 @@ const logger = new Logger({
       inject: [PostgresProvider],
     },
     {
+      provide: PostgresRequirementRepository,
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        const typeormRepo = datasource.getRepository(RequirementModel);
+        return new PostgresRequirementRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
       provide: GeocodingService,
       useFactory: () => {
         const primaryStrategy = new OpenStreetMapStrategy('worker-event', true);
@@ -84,6 +96,7 @@ const logger = new Logger({
     },
     EventService,
     TagService,
+    RequirementService,
     {
       provide: CustomConfig,
       useValue: config,

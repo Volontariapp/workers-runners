@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import { JobMessagingType } from '@volontariapp/messaging';
+import {
+  JobMessagingType,
+  IFallbackChangeEventStateJobPayload,
+} from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../interfaces/job-handler.interface.js';
 import { EventService } from '@volontariapp/domain-event';
@@ -23,8 +26,8 @@ export class FallbackChangeEventStateHandler implements IJobHandler<
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
-    const command = job.data.payload.payload;
-    const { id, newState } = command;
+    const command: IFallbackChangeEventStateJobPayload = job.data.payload;
+    const { id, newState } = command.payload;
     await this.eventService.changeState(id, newState);
   }
 }

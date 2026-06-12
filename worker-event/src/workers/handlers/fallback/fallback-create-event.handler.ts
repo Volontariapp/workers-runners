@@ -68,6 +68,7 @@ export class FallbackCreateEventHandler implements IJobHandler<
       awardedImpactScore: command.payload.awardedImpactScore,
       maxParticipants: command.payload.maxParticipants,
       tags,
+      organizerId: command.userId,
     });
   }
 }

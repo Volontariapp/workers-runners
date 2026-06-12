@@ -1,8 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import { JobMessagingType } from '@volontariapp/messaging';
+import {
+  JobMessagingType,
+  IFallbackUpdateTagJobPayload,
+} from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../interfaces/job-handler.interface.js';
+import { TagService } from '@volontariapp/domain-event';
 
 @Injectable()
 export class FallbackUpdateTagHandler implements IJobHandler<
@@ -14,13 +18,20 @@ export class FallbackUpdateTagHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_UPDATE_TAG;
 
+  constructor(private readonly tagService: TagService) {}
+
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_UPDATE_TAG>,
   ): Promise<void> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
-    await Promise.resolve();
-    // TODO: Implement compensation logic
+    const command: IFallbackUpdateTagJobPayload = job.data.payload;
+    const { id, name, balise } = command.payload;
+
+    await this.tagService.update(id, {
+      name,
+      balise,
+    });
   }
 }
