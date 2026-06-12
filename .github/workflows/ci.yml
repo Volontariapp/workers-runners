@@ -51,10 +51,34 @@ jobs:
         working-directory: ${{ matrix.worker }}
         run: yarn build
 
+      - name: Checkout ci-tools
+        if: matrix.worker == 'worker-event'
+        uses: actions/checkout@v4
+        with:
+          repository: Volontariapp/ci-tools
+          path: ci-tools
+          token: ${{ secrets.ORG_REPO_TOKEN }}
+
+      - name: Setup Database for integration tests
+        if: matrix.worker == 'worker-event'
+        working-directory: ci-tools
+        run: |
+          docker compose up -d postgres-event redis
+          # Wait for database to be ready
+          until docker compose exec -T postgres-event pg_isready -U user -d ms_event; do
+            echo "Waiting for postgres-event..."
+            sleep 2
+          done
+
+      - name: Run Integration Tests
+        if: matrix.worker == 'worker-event'
+        working-directory: ${{ matrix.worker }}
+        run: yarn test:integration --runInBand
+
   deploy:
     name: Update Deploy Submodule
     runs-on: ubuntu-latest
-    needs: check
+    needs: [check, docker]
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout Deploy Repository

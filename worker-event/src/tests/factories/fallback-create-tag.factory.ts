@@ -9,9 +9,9 @@ export class FallbackCreateTagFactory {
     return {
       userId: randomUUID(),
       payload: {
-        name: tagData.name!,
-        slug: tagData.slug!,
-        balise: tagData.balise!,
+        name: tagData.name as string,
+        slug: tagData.slug as string,
+        balise: tagData.balise as string,
       },
     };
   }
