@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackManageRequirementsJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -19,13 +20,17 @@ export class FallbackManageRequirementsHandler implements IJobHandler<
   public readonly jobType = JobMessagingType.FALLBACK_MANAGE_REQUIREMENTS;
 
   constructor(
+    @Inject(EventService)
     private readonly eventService: EventService,
+    @Inject(RequirementService)
     private readonly requirementService: RequirementService,
   ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_MANAGE_REQUIREMENTS>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_MANAGE_REQUIREMENTS];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
@@ -58,5 +63,6 @@ export class FallbackManageRequirementsHandler implements IJobHandler<
         await this.eventService.update(data.eventId, { requirements });
       }
     }
+    return { originalPayload: job.data.payload };
   }
 }

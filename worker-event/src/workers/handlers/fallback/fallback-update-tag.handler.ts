@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackUpdateTagJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -18,11 +19,16 @@ export class FallbackUpdateTagHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_UPDATE_TAG;
 
-  constructor(private readonly tagService: TagService) {}
+  constructor(
+    @Inject(TagService)
+    private readonly tagService: TagService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_UPDATE_TAG>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_UPDATE_TAG];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
@@ -33,5 +39,6 @@ export class FallbackUpdateTagHandler implements IJobHandler<
       name,
       balise,
     });
+    return { originalPayload: job.data.payload };
   }
 }

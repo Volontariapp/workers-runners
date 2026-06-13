@@ -2,7 +2,11 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Processor } from '@nestjs/bullmq';
 import { BaseWorker, JobAuditRepository } from '@volontariapp/workers';
 import type { JobOf } from '@volontariapp/workers';
-import { type JobMessagingType, EventsQueue } from '@volontariapp/messaging';
+import {
+  type JobMessagingType,
+  JobRegistry,
+  EventsQueue,
+} from '@volontariapp/messaging';
 import type { IJobHandler } from './handlers/interfaces/job-handler.interface.js';
 
 import { FallbackGetUserCreatedEventsHandler } from './handlers/fallback/fallback-get-user-created-events.handler.js';
@@ -64,11 +68,15 @@ export class FallbackEventWorker extends BaseWorker<JobMessagingType> {
     this.handlerMap = new Map(handlers.map((h) => [h.jobType, h]));
   }
 
-  protected async processJob(job: JobOf<JobMessagingType>): Promise<void> {
+  protected async processJob(
+    job: JobOf<JobMessagingType>,
+  ): Promise<{ originalPayload: JobRegistry[JobMessagingType] }> {
     const handler = this.handlerMap.get(job.name);
     if (!handler) {
       throw new Error(`Unhandled job type: ${job.name}`);
     }
-    await handler.handle(job);
+    return handler.handle(job) as Promise<{
+      originalPayload: JobRegistry[JobMessagingType];
+    }>;
   }
 }

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackChangeEventStateJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -18,16 +19,22 @@ export class FallbackChangeEventStateHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_CHANGE_EVENT_STATE;
 
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    @Inject(EventService)
+    private readonly eventService: EventService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_CHANGE_EVENT_STATE>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_CHANGE_EVENT_STATE];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
     const command: IFallbackChangeEventStateJobPayload = job.data.payload;
     const { id, newState } = command.payload;
     await this.eventService.changeState(id, newState);
+    return { originalPayload: job.data.payload };
   }
 }

@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackDeleteEventJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -18,16 +19,22 @@ export class FallbackDeleteEventHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_DELETE_EVENT;
 
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    @Inject(EventService)
+    private readonly eventService: EventService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_DELETE_EVENT>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_DELETE_EVENT];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
     const command: IFallbackDeleteEventJobPayload = job.data.payload;
     const { id } = command.payload;
     await this.eventService.delete(id);
+    return { originalPayload: job.data.payload };
   }
 }

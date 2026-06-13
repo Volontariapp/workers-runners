@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackDeleteTagJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -18,16 +19,22 @@ export class FallbackDeleteTagHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_DELETE_TAG;
 
-  constructor(private readonly tagService: TagService) {}
+  constructor(
+    @Inject(TagService)
+    private readonly tagService: TagService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_DELETE_TAG>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_DELETE_TAG];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
     const command: IFallbackDeleteTagJobPayload = job.data.payload;
     const { id } = command.payload;
     await this.tagService.delete(id);
+    return { originalPayload: job.data.payload };
   }
 }

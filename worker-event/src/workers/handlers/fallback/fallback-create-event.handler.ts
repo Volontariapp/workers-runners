@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   IFallbackCreateEventJobPayload,
   JobMessagingType,
+  JobRegistry,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../interfaces/job-handler.interface.js';
@@ -18,11 +19,16 @@ export class FallbackCreateEventHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_CREATE_EVENT;
 
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    @Inject(EventService)
+    private readonly eventService: EventService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_CREATE_EVENT>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_CREATE_EVENT];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
@@ -70,5 +76,6 @@ export class FallbackCreateEventHandler implements IJobHandler<
       tags,
       organizerId: command.userId,
     });
+    return { originalPayload: job.data.payload };
   }
 }

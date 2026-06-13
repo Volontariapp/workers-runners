@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
+  JobRegistry,
   IFallbackUpdateEventJobPayload,
 } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
@@ -23,11 +25,16 @@ export class FallbackUpdateEventHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_UPDATE_EVENT;
 
-  constructor(private readonly eventService: EventService) {}
+  constructor(
+    @Inject(EventService)
+    private readonly eventService: EventService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_UPDATE_EVENT>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_UPDATE_EVENT];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
@@ -39,7 +46,7 @@ export class FallbackUpdateEventHandler implements IJobHandler<
 
     if (event) {
       const shouldUpdate = (field: string) =>
-        updateMask.length === 0 || updateMask.includes(field);
+        (updateMask || []).length !== 0 && (updateMask || []).includes(field);
 
       if (shouldUpdate('name') || shouldUpdate('title'))
         partialEntity.name = event.title;
@@ -80,7 +87,7 @@ export class FallbackUpdateEventHandler implements IJobHandler<
       }
 
       if (shouldUpdate('tags')) {
-        const tagsIds = event.tags.map((t: TagEntity) => t.id);
+        const tagsIds = (event.tags || []).map((t: TagEntity) => t.id);
         partialEntity.tags = tagsIds.map((tagId: string) => {
           const tag = new TagEntity();
           tag.id = tagId;
@@ -90,5 +97,6 @@ export class FallbackUpdateEventHandler implements IJobHandler<
     }
 
     await this.eventService.update(id, partialEntity);
+    return { originalPayload: job.data.payload };
   }
 }

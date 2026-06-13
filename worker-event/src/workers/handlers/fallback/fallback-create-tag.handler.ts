@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import { JobMessagingType } from '@volontariapp/messaging';
+import { JobMessagingType, JobRegistry } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../interfaces/job-handler.interface.js';
 import { TagService } from '@volontariapp/domain-event';
@@ -15,16 +15,22 @@ export class FallbackCreateTagHandler implements IJobHandler<
 
   public readonly jobType = JobMessagingType.FALLBACK_CREATE_TAG;
 
-  constructor(private readonly tagService: TagService) {}
+  constructor(
+    @Inject(TagService)
+    private readonly tagService: TagService,
+  ) {}
 
   async handle(
     job: JobOf<typeof JobMessagingType.FALLBACK_CREATE_TAG>,
-  ): Promise<void> {
+  ): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FALLBACK_CREATE_TAG];
+  }> {
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
     const command = job.data.payload.payload;
     const { name, slug, balise } = command;
     await this.tagService.create({ name, slug, balise });
+    return { originalPayload: job.data.payload };
   }
 }
