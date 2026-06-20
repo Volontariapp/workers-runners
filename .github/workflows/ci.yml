@@ -113,7 +113,7 @@ jobs:
             svc_name="${worker#worker-}"
             
             DEPLOYMENT_FILE="apps/base/ms-${svc_name}/deployment-worker.yaml"
-            IMAGE_NAME="ghcr.io/${REPO_OWNER_LOWER}/${worker}:sha-${SERVICE_SHA_SHORT}"
+            export IMAGE_NAME="ghcr.io/${REPO_OWNER_LOWER}/${worker}:sha-${SERVICE_SHA_SHORT}"
             
             if [ -f "$DEPLOYMENT_FILE" ]; then
               echo "Updating container image in $DEPLOYMENT_FILE to $IMAGE_NAME..."
