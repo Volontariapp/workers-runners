@@ -1,4 +1,4 @@
-# Workers Runners 🏃‍♂️📦
+# Workers Runners ‍️
 
 ## Project Overview & Value Proposition
 
