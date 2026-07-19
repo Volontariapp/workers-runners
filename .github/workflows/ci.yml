@@ -10,6 +10,9 @@ on:
 jobs:
   ci:
     uses: Volontariapp/ci-tools/.github/workflows/runner-pipeline.yml@main
+    permissions:
+      contents: read
+      packages: write
     with:
       service-name: workers-runners
       services: '["worker-user", "worker-event", "worker-post", "worker-social"]'
