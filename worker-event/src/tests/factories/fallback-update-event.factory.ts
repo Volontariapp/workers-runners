@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { CoverStatus } from '@volontariapp/contracts';
 import type { IFallbackUpdateEventJobPayload } from '@volontariapp/messaging';
 import { EventFactory } from './event.factory.js';
 
@@ -30,6 +31,7 @@ export class FallbackUpdateEventFactory {
           tags: [],
           requirements: [],
           currentParticipants: 10,
+          coverStatus: CoverStatus.COVER_STATUS_NONE,
         },
       },
     };

@@ -2,7 +2,8 @@ import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
 import { loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
 import { JobAuditRepository } from '@volontariapp/workers';
-import { JobAuditModel } from '@volontariapp/database';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EventQueueModel, JobAuditModel } from '@volontariapp/database';
 import { CustomConfig } from './config/custom-config.js';
 import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 import { initDatabase } from './providers/database.provider.js';
@@ -86,6 +87,14 @@ const logger = new Logger({
         const datasource = postgres.getDriver();
         const typeormRepo = datasource.getRepository(JobAuditModel);
         return new JobAuditRepository(typeormRepo);
+      },
+      inject: [PostgresProvider],
+    },
+    {
+      provide: getRepositoryToken(EventQueueModel),
+      useFactory: (postgres: PostgresProvider) => {
+        const datasource = postgres.getDriver();
+        return datasource.getRepository(EventQueueModel);
       },
       inject: [PostgresProvider],
     },
