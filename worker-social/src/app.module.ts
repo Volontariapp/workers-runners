@@ -1,3 +1,4 @@
+// trigger social
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
 import { loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
