@@ -12,6 +12,7 @@ import { TestEnvironment } from './setup/test-environment.js';
 import { DatabaseCleaner } from './setup/database-cleaner.js';
 import { FallbackDeleteEventHandler } from '../workers/handlers/fallback/fallback-delete-event.handler.js';
 import { EventService } from '@volontariapp/domain-event';
+import { UserRoles } from '@volontariapp/shared';
 import { JobMessagingType, EventsQueue } from '@volontariapp/messaging';
 import { FallbackDeleteEventFactory } from './factories/fallback-delete-event.factory.js';
 import { EventFactory } from './factories/event.factory.js';
@@ -58,7 +59,9 @@ describe('FallbackDeleteEventHandler (Integration)', () => {
   it('should process a FALLBACK_DELETE_EVENT job exactly once', async () => {
     const event = await eventService.create(EventFactory.buildEventData());
 
-    const payload = FallbackDeleteEventFactory.buildPayload();
+    const payload = FallbackDeleteEventFactory.buildPayload({
+      userRole: UserRoles.ADMIN,
+    });
     payload.payload.id = event.id;
 
     const jobData = {
@@ -87,7 +90,9 @@ describe('FallbackDeleteEventHandler (Integration)', () => {
   it('should retry job on failure and succeed on the second attempt, updating audit to COMPLETED', async () => {
     const event = await eventService.create(EventFactory.buildEventData());
 
-    const payload = FallbackDeleteEventFactory.buildPayload();
+    const payload = FallbackDeleteEventFactory.buildPayload({
+      userRole: UserRoles.ADMIN,
+    });
     payload.payload.id = event.id;
 
     const jobId = randomUUID();
