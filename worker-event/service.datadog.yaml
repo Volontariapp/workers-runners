@@ -1,0 +1,9 @@
+schema-version: v2.2
+dd-service: worker-event
+team: volontariapp
+application: volontariapp
+description: Worker BullMQ du domaine event : exécute les jobs d'arrière-plan et de repli.
+tier: backend
+type: web
+repos:
+  - url: https://github.com/Volontariapp/workers-runners

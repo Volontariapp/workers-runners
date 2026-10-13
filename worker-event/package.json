@@ -34,6 +34,7 @@
     "@volontariapp/health-check": "^1.0.7",
     "@volontariapp/logger": "^0.3.0",
     "@volontariapp/messaging": "2.25.0",
+    "@volontariapp/monitoring": "2.2.0",
     "@volontariapp/shared": "0.14.0",
     "@volontariapp/testing": "^1.0.3",
     "@volontariapp/workers": "1.4.0",
