@@ -28,7 +28,7 @@
     "@volontariapp/bridge": "^1.0.7",
     "@volontariapp/config": "^3.2.3",
     "@volontariapp/contracts": "^4.3.14",
-    "@volontariapp/database": "^3.4.25",
+    "@volontariapp/database": "3.4.32",
     "@volontariapp/domain-event": "3.10.0",
     "@volontariapp/eslint-config": "^2.2.5",
     "@volontariapp/health-check": "^1.0.7",
@@ -54,7 +54,7 @@
     "@volontariapp/bridge": "^1.0.7",
     "@volontariapp/config": "^3.2.3",
     "@volontariapp/contracts": "^4.3.14",
-    "@volontariapp/database": "^3.4.25",
+    "@volontariapp/database": "3.4.32",
     "@volontariapp/domain-event": "3.10.0",
     "@volontariapp/eslint-config": "^2.2.5",
     "@volontariapp/health-check": "^1.0.7",
@@ -72,5 +72,8 @@
     "tsx": "^4.21.0",
     "typescript": "5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "resolutions": {
+    "@volontariapp/database": "3.4.32"
   }
 }
