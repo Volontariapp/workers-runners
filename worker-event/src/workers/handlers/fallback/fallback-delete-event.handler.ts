@@ -1,4 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { UnrecoverableError } from 'bullmq';
 import { Logger } from '@volontariapp/logger';
 import {
   JobMessagingType,
@@ -8,6 +9,12 @@ import {
 import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../interfaces/job-handler.interface.js';
 import { EventService } from '@volontariapp/domain-event';
+
+type StoredFallbackDeletePayload = Pick<
+  IFallbackDeleteEventJobPayload,
+  'userId' | 'payload'
+> &
+  Partial<Pick<IFallbackDeleteEventJobPayload, 'userRole'>>;
 
 @Injectable()
 export class FallbackDeleteEventHandler implements IJobHandler<
@@ -32,9 +39,18 @@ export class FallbackDeleteEventHandler implements IJobHandler<
     this.logger.info(
       `Processing fallback job ${String(job.id)} of type ${job.name}`,
     );
-    const command: IFallbackDeleteEventJobPayload = job.data.payload;
+    // Jobs enqueued before userRole existed carry no role at runtime.
+    const command: StoredFallbackDeletePayload = job.data.payload;
     const { id } = command.payload;
-    await this.eventService.delete(id);
+    if (!command.userRole) {
+      this.logger.error(
+        `Refusing fallback job ${String(job.id)}: missing userRole, ownership cannot be re-checked`,
+      );
+      throw new UnrecoverableError(
+        `FALLBACK_DELETE_EVENT job ${String(job.id)} has no userRole`,
+      );
+    }
+    await this.eventService.delete(id, command.userId, command.userRole);
     return { originalPayload: job.data.payload };
   }
 }
