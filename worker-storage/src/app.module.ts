@@ -11,6 +11,7 @@ import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
+Logger.setDefaultConfig({ format: config.logger.format });
 const logger = new Logger({
   context: 'WORKER-STORAGE',
   format: config.logger.format,

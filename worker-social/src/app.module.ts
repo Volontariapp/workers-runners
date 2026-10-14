@@ -39,6 +39,7 @@ import {
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
+Logger.setDefaultConfig({ format: config.logger.format });
 const logger = new Logger({
   context: 'WORKER-SOCIAL',
   format: config.logger.format,
