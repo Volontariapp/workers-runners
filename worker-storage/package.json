@@ -25,6 +25,7 @@
     "@volontariapp/eslint-config": "^2.2.5",
     "@volontariapp/health-check": "^1.0.7",
     "@volontariapp/logger": "^0.3.0",
+    "@volontariapp/monitoring": "^2.2.0",
     "@volontariapp/workers": "^1.4.0",
     "bullmq": "^5.76.5",
     "class-transformer": "^0.5.1",
