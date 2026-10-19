@@ -5,10 +5,16 @@ import { PostgresBridgeHealthProvider } from '@volontariapp/health-check';
 import { JobAuditEntity } from '@volontariapp/workers';
 import { JobAuditModel } from '@volontariapp/database';
 import { databaseMapper } from '@volontariapp/database';
+import {
+  FileModel,
+  ReleasedEntityModel,
+  registerStorageMappings,
+} from '@volontariapp/domain-storage';
 import { instanceToPlain } from 'class-transformer';
 
 // Register the bidirectional mapper once at startup
 databaseMapper.registerBidirectional(JobAuditModel, JobAuditEntity);
+registerStorageMappings();
 
 export async function initDatabase(
   config: PostgresConfig,
@@ -16,8 +22,8 @@ export async function initDatabase(
 ): Promise<PostgresProvider> {
   const dbProvider = new PostgresProvider({
     ...(instanceToPlain(config) as IPostgresConfig),
-    entities: [JobAuditModel],
-    synchronize: true,
+    entities: [JobAuditModel, FileModel, ReleasedEntityModel],
+    synchronize: false,
   });
 
   try {

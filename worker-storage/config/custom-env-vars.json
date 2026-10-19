@@ -12,5 +12,21 @@
     "password": "REDIS_PASSWORD",
     "dbIndex": "REDIS_DB_INDEX"
   },
+  "s3": {
+    "endpoint": "S3_ENDPOINT",
+    "publicEndpoint": "S3_PUBLIC_ENDPOINT",
+    "region": "S3_REGION",
+    "accessKey": "S3_ACCESS_KEY",
+    "secretKey": "S3_SECRET_KEY",
+    "publicBucket": "S3_PUBLIC_BUCKET",
+    "privateBucket": "S3_PRIVATE_BUCKET",
+    "publicBaseUrl": "S3_PUBLIC_BASE_URL",
+    "presignedUrlTtl": "S3_PRESIGNED_URL_TTL"
+  },
+  "scanner": {
+    "host": "SCANNER_HOST",
+    "port": "SCANNER_PORT",
+    "timeoutMs": "SCANNER_TIMEOUT_MS"
+  },
   "port": "PORT"
 }

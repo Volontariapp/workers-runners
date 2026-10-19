@@ -11,7 +11,9 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          defaultProject: 'tsconfig.eslint.json',
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -26,6 +28,6 @@ export default tseslint.config(
   },
   prettierConfig,
   {
-    ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs'],
+    ignores: ['dist/**', 'node_modules/**', 'eslint.config.mjs', 'src/**/*.spec.ts'],
   },
 );
