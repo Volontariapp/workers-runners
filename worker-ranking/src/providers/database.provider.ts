@@ -3,12 +3,19 @@ import type { PostgresConfig, IPostgresConfig } from '@volontariapp/config';
 import type { Logger } from '@volontariapp/logger';
 import { PostgresBridgeHealthProvider } from '@volontariapp/health-check';
 import { JobAuditEntity } from '@volontariapp/workers';
-import { JobAuditModel } from '@volontariapp/database';
-import { databaseMapper } from '@volontariapp/database';
+import {
+  JobAuditModel,
+  JobsOutboxEntity,
+  JobsOutboxModel,
+  databaseMapper,
+} from '@volontariapp/database';
+import { RANKING_MODELS } from '@volontariapp/domain-ranking';
 import { instanceToPlain } from 'class-transformer';
 
-// Register the bidirectional mapper once at startup
+// Les mappings sont enregistres une fois au demarrage : sans eux, une ecriture outbox leve
+// "No mapping registered from ... to ...".
 databaseMapper.registerBidirectional(JobAuditModel, JobAuditEntity);
+databaseMapper.registerBidirectional(JobsOutboxModel, JobsOutboxEntity);
 
 export async function initDatabase(
   config: PostgresConfig,
@@ -16,8 +23,8 @@ export async function initDatabase(
 ): Promise<PostgresProvider> {
   const dbProvider = new PostgresProvider({
     ...(instanceToPlain(config) as IPostgresConfig),
-    entities: [JobAuditModel],
-    synchronize: true,
+    entities: [JobAuditModel, JobsOutboxModel, ...RANKING_MODELS],
+    synchronize: false,
   });
 
   try {

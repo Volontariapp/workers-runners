@@ -5,5 +5,8 @@
     "username": "user",
     "password": "password",
     "database": "ms_ranking"
+  },
+  "ranking": {
+    "locationKey": "local-only-location-key-32-byte!"
   }
 }

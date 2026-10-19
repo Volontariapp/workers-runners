@@ -1,23 +1,49 @@
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
-import { loadConfig } from '@volontariapp/config';
+import { BullModule } from '@nestjs/bullmq';
+import { AuthModule } from '@volontariapp/auth';
 import { Logger } from '@volontariapp/logger';
+import { RankingQueue } from '@volontariapp/messaging';
 import { JobAuditRepository } from '@volontariapp/workers';
 import { JobAuditModel } from '@volontariapp/database';
+import { NoopRankingScorer } from '@volontariapp/domain-ranking';
+import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
 import { CustomConfig } from './config/custom-config.js';
-import { resolveConfigDirectory } from './config/resolve-config-directory.js';
+import { config } from './config/runtime-config.js';
+import { logger } from './config/logger.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
-import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
-
-const configDir = resolveConfigDirectory();
-const config = loadConfig(configDir, CustomConfig);
-Logger.setDefaultConfig({ format: config.logger.format });
-const logger = new Logger({
-  context: 'WORKER-RANKING',
-  format: config.logger.format,
-});
+import { GrpcClientModule } from './infrastructure/grpc/grpc-client.module.js';
+import { InternalMetadataProvider } from './clients/internal-metadata.provider.js';
+import { EventRankingClient } from './clients/event-ranking.client.js';
+import { SocialRankingClient } from './clients/social-ranking.client.js';
+import { rankingDomainProviders } from './domain/ranking-domain.providers.js';
+import { RankingJobWriter } from './domain/ranking-job-writer.js';
+import { EventCandidateService } from './scoring/event-candidate.service.js';
+import { RANKING_SCORER } from './scoring/constants/ranking-scorer.constants.js';
+import { EventScoringService } from './scoring/event-scoring.service.js';
+import {
+  ComputeUserRankingHandler,
+  FanoutRankingHandler,
+} from './workers/handlers/index.js';
+import { RankingWorker, FallbackRankingWorker } from './workers/index.js';
 
 @Module({
+  imports: [
+    BullModule.forRoot({
+      connection: {
+        host: config.redis.host,
+        port: config.redis.port,
+        password: config.redis.password,
+        db: config.redis.dbIndex,
+      },
+    }),
+    BullModule.registerQueue(
+      { name: RankingQueue.RANKING },
+      { name: RankingQueue.FALLBACK_RANKING },
+    ),
+    AuthModule.registerGateway(config.auth),
+    GrpcClientModule,
+  ],
   providers: [
     {
       provide: CustomConfig,
@@ -50,6 +76,18 @@ const logger = new Logger({
       },
       inject: [PostgresProvider],
     },
+    ...rankingDomainProviders,
+    { provide: RANKING_SCORER, useClass: NoopRankingScorer },
+    InternalMetadataProvider,
+    SocialRankingClient,
+    EventRankingClient,
+    RankingJobWriter,
+    EventCandidateService,
+    EventScoringService,
+    ComputeUserRankingHandler,
+    FanoutRankingHandler,
+    RankingWorker,
+    FallbackRankingWorker,
   ],
 })
 export class AppModule implements OnApplicationShutdown {
@@ -69,4 +107,3 @@ export class AppModule implements OnApplicationShutdown {
     logger.info('Database and Redis connection pools closed successfully.');
   }
 }
-export { logger };
