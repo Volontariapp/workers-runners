@@ -5,7 +5,7 @@ import {
   getGrpcOptions,
 } from '@volontariapp/contracts-nest';
 import { config } from '../../config/runtime-config.js';
-import { EVENT_PACKAGE, SOCIAL_PACKAGE } from './constants.js';
+import { EVENT_PACKAGE, POST_PACKAGE, SOCIAL_PACKAGE } from './constants.js';
 
 @Global()
 @Module({
@@ -25,6 +25,14 @@ import { EVENT_PACKAGE, SOCIAL_PACKAGE } from './constants.js';
           getGrpcOptions(
             GRPC_MICROSERVICES.EVENT,
             config.microServices.msEventUrl,
+          ),
+      },
+      {
+        name: POST_PACKAGE,
+        useFactory: () =>
+          getGrpcOptions(
+            GRPC_MICROSERVICES.POST,
+            config.microServices.msPostUrl,
           ),
       },
     ]),

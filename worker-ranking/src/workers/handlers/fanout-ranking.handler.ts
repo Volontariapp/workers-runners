@@ -7,6 +7,7 @@ import {
 import { Logger } from '@volontariapp/logger';
 import { JobMessagingType, type JobRegistry } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
+import { SocialFeedClient } from '../../clients/social-feed.client.js';
 import { SocialRankingClient } from '../../clients/social-ranking.client.js';
 import { CustomConfig } from '../../config/custom-config.js';
 import type { ComputeRequest } from '../../domain/interfaces/compute-request.interface.js';
@@ -25,6 +26,7 @@ export class FanoutRankingHandler implements IJobHandler<FanoutJobType> {
   constructor(
     private readonly runService: RankingRunService,
     private readonly social: SocialRankingClient,
+    private readonly socialFeed: SocialFeedClient,
     private readonly jobWriter: RankingJobWriter,
     private readonly customConfig: CustomConfig,
   ) {}
@@ -34,17 +36,12 @@ export class FanoutRankingHandler implements IJobHandler<FanoutJobType> {
   ): Promise<{ originalPayload: JobRegistry[FanoutJobType] }> {
     const payload = job.data.payload;
 
-    if (payload.trigger === 'POST_CREATED') {
-      this.logger.info(
-        `Job ${String(job.id)}: the post fan-out belongs to the feed worker`,
-      );
-      return { originalPayload: payload };
-    }
-
     const requests =
-      payload.trigger === 'EVENT_CREATED'
-        ? await this.activeUsers('EVENT_CREATED')
-        : await this.participants(payload.eventId);
+      payload.trigger === 'POST_CREATED'
+        ? await this.activeFollowers(payload.authorId)
+        : payload.trigger === 'EVENT_CREATED'
+          ? await this.activeUsers('EVENT_CREATED')
+          : await this.participants(payload.eventId);
 
     if (requests.length > 0) {
       await this.jobWriter.requestCompute(requests);
@@ -76,6 +73,49 @@ export class FanoutRankingHandler implements IJobHandler<FanoutJobType> {
           reason,
         })),
       );
+      const last = page.at(-1);
+      if (!last || page.length < ACTIVE_USERS_PAGE) {
+        break;
+      }
+      after = { computedAt: last.computedAt, userId: last.userId };
+    }
+    return requests;
+  }
+
+  /**
+   * Abonnes de l'auteur d'un nouveau post (docs/matching/11, section 7) : pagines par 50 jusqu'au
+   * plafond, intersectes avec les utilisateurs actifs du feed, dedupliques, sans l'auteur.
+   */
+  private async activeFollowers(
+    authorId: string | undefined,
+  ): Promise<ComputeRequest[]> {
+    if (!authorId) {
+      this.logger.warn('POST_CREATED fan-out without authorId, ignored');
+      return [];
+    }
+    const { activeDays, feedMaxFanout } = this.customConfig.ranking;
+    const followers = new Set(
+      await this.socialFeed.followerIds(authorId, feedMaxFanout),
+    );
+    followers.delete(authorId);
+    const requests: ComputeRequest[] = [];
+    let after: ActiveUsersCursor | undefined;
+    while (followers.size > 0) {
+      const page = await this.runService.listActiveUsers({
+        listKind: RankingListKind.POST,
+        days: activeDays,
+        limit: ACTIVE_USERS_PAGE,
+        after,
+      });
+      for (const { userId } of page) {
+        if (followers.delete(userId)) {
+          requests.push({
+            userId,
+            listKind: RankingListKind.POST,
+            reason: 'POST_PUBLISHED',
+          });
+        }
+      }
       const last = page.at(-1);
       if (!last || page.length < ACTIVE_USERS_PAGE) {
         break;

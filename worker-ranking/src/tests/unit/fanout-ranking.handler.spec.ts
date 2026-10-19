@@ -15,6 +15,7 @@ import {
   createMockRunService,
   createMockSocialClient,
 } from '../mocks/ranking.mock.js';
+import { createMockSocialFeedClient } from '../mocks/feed.mock.js';
 
 const EVENT = '22222222-2222-4222-a222-222222222222';
 const REQUESTED_AT = '2026-10-19 10:00:00.5+00';
@@ -23,16 +24,18 @@ describe('FanoutRankingHandler (Unit)', () => {
   const runService = createMockRunService();
   const social = createMockSocialClient();
   const jobWriter = createMockJobWriter();
+  const socialFeed = createMockSocialFeedClient();
   let handler: FanoutRankingHandler;
   let activeUsersSpy: jest.SpiedFunction<typeof runService.listActiveUsers>;
   let requestSpy: jest.SpiedFunction<typeof jobWriter.requestCompute>;
 
-  const build = (maxFanout: number) =>
+  const build = (maxFanout: number, feedMaxFanout = 200) =>
     new FanoutRankingHandler(
       runService,
       social,
+      socialFeed,
       jobWriter,
-      buildConfig({ maxFanout }),
+      buildConfig({ maxFanout, feedMaxFanout }),
     );
 
   beforeEach(() => {
@@ -129,17 +132,72 @@ describe('FanoutRankingHandler (Unit)', () => {
     expect(requestSpy).not.toHaveBeenCalled();
   });
 
-  it('leaves the post fan-out to the feed worker', async () => {
+  it('asks a feed refresh for the active followers of the author of a new post only', async () => {
+    const followersSpy = jest
+      .spyOn(socialFeed, 'followerIds')
+      .mockResolvedValue(['f1', 'f2', 'author', 'f1']);
+    activeUsersSpy.mockResolvedValue([
+      { userId: 'f2', computedAt: 'a' },
+      { userId: 'other', computedAt: 'b' },
+      { userId: 'f1', computedAt: 'c' },
+    ]);
     const payload = {
       trigger: 'POST_CREATED' as const,
       postId: 'p',
+      authorId: 'author',
       requestedAt: REQUESTED_AT,
     };
 
     const result = await handler.handle(buildJob(payload));
 
-    expect(requestSpy).not.toHaveBeenCalled();
+    expect(followersSpy).toHaveBeenCalledWith('author', 200);
+    expect(activeUsersSpy.mock.calls[0]?.[0].listKind).toBe(
+      RankingListKind.POST,
+    );
+    expect(requestSpy.mock.calls[0]?.[0]).toEqual([
+      {
+        userId: 'f2',
+        listKind: RankingListKind.POST,
+        reason: 'POST_PUBLISHED',
+      },
+      {
+        userId: 'f1',
+        listKind: RankingListKind.POST,
+        reason: 'POST_PUBLISHED',
+      },
+    ]);
     expect(result.originalPayload).toBe(payload);
+  });
+
+  it('reads no active user when the author has no follower', async () => {
+    jest.spyOn(socialFeed, 'followerIds').mockResolvedValue([]);
+
+    await handler.handle(
+      buildJob({
+        trigger: 'POST_CREATED',
+        postId: 'p',
+        authorId: 'author',
+        requestedAt: REQUESTED_AT,
+      }),
+    );
+
+    expect(activeUsersSpy).not.toHaveBeenCalled();
+    expect(requestSpy).not.toHaveBeenCalled();
+  });
+
+  it('ignores a new post without author', async () => {
+    const followersSpy = jest.spyOn(socialFeed, 'followerIds');
+
+    await handler.handle(
+      buildJob({
+        trigger: 'POST_CREATED',
+        postId: 'p',
+        requestedAt: REQUESTED_AT,
+      }),
+    );
+
+    expect(followersSpy).not.toHaveBeenCalled();
+    expect(requestSpy).not.toHaveBeenCalled();
   });
 
   it('ignores a finished event without id', async () => {

@@ -21,7 +21,8 @@
   "port": 4107,
   "microServices": {
     "msSocialUrl": "localhost:5004",
-    "msEventUrl": "localhost:5003"
+    "msEventUrl": "localhost:5003",
+    "msPostUrl": "localhost:5002"
   },
   "auth": {
     "internalPrivateKeyPath": "certs/internal.key",
@@ -38,6 +39,14 @@
     "buzzWindowDays": 14,
     "requestTtlSeconds": 120,
     "debounceSeconds": 30,
-    "workerConcurrency": 5
+    "workerConcurrency": 5,
+    "feedListSize": 100,
+    "feedAuthors": 200,
+    "feedMaxAgeDays": 7,
+    "feedEventPostMaxAgeDays": 30,
+    "feedMaxFanout": 200,
+    "feedMinItems": 20,
+    "feedLikesLimit": 200,
+    "feedGlobalEnabled": true
   }
 }
