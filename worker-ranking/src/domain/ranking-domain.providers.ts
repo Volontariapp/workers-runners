@@ -1,5 +1,4 @@
 import type { Provider } from '@nestjs/common';
-import { PostgresProvider } from '@volontariapp/bridge';
 import {
   PostgresRankingEventFeedbackRepository,
   PostgresRankingEventMentionRepository,
@@ -23,18 +22,7 @@ import {
   RankingUserLocationModel,
   RankingWishService,
 } from '@volontariapp/domain-ranking';
-import type { EntityTarget, ObjectLiteral, Repository } from 'typeorm';
-
-/** Un depot de domain-ranking, construit sur le depot TypeORM de la source de donnees du worker. */
-const repositoryProvider = <TModel extends ObjectLiteral, TRepository>(
-  repository: new (typeormRepository: Repository<TModel>) => TRepository,
-  model: EntityTarget<TModel>,
-): Provider => ({
-  provide: repository,
-  useFactory: (postgres: PostgresProvider): TRepository =>
-    new repository(postgres.getDriver().getRepository(model)),
-  inject: [PostgresProvider],
-});
+import { repositoryProvider } from './helpers/repository-provider.helpers.js';
 
 export const rankingDomainProviders: Provider[] = [
   repositoryProvider(PostgresRankingRunRepository, RankingRunModel),

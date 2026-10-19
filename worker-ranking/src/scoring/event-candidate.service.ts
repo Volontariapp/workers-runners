@@ -3,27 +3,13 @@ import {
   RankingFeedbackService,
   RankingLocationService,
   originFromHistory,
-  type GeoPoint,
 } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
 import { EventRankingClient } from '../clients/event-ranking.client.js';
-import type { RankingEvent } from '../clients/interfaces/ranking-event.interface.js';
 import { SocialRankingClient } from '../clients/social-ranking.client.js';
 import { CustomConfig } from '../config/custom-config.js';
-
-export interface CollectedEvents {
-  candidates: RankingEvent[];
-  /** Evenements participes ou souhaites, pour l'affinite de type et de tags. */
-  history: RankingEvent[];
-  /** Evenements touches par au moins un ami. */
-  friendTouched: ReadonlySet<string>;
-  /** Position de l'utilisateur, a defaut centre de son historique, a defaut inconnue. */
-  origin: GeoPoint | null;
-}
-
-const isFull = (event: RankingEvent): boolean =>
-  event.maxParticipants > 0 &&
-  event.currentParticipants >= event.maxParticipants;
+import { isFullEvent } from './helpers/is-full-event.helpers.js';
+import type { CollectedEvents } from './interfaces/collected-events.interface.js';
 
 /**
  * Etapes 3 a 5 du calcul : historique, exclusions, candidats de ms-event (source de verite) puis
@@ -88,7 +74,7 @@ export class EventCandidateService {
       (event) =>
         !excluded.has(event.id) &&
         allowedSet.has(event.id) &&
-        !isFull(event) &&
+        !isFullEvent(event) &&
         event.startAt.getTime() > now.getTime(),
     );
     this.logger.info(

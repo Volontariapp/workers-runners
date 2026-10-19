@@ -12,9 +12,8 @@ import type { JobOf } from '@volontariapp/workers';
 import { RankingJobWriter } from '../../domain/ranking-job-writer.js';
 import { EventCandidateService } from '../../scoring/event-candidate.service.js';
 import { EventScoringService } from '../../scoring/event-scoring.service.js';
-import type { IJobHandler } from './job-handler.interface.js';
-
-type ComputeJobType = typeof JobMessagingType.COMPUTE_USER_RANKING;
+import type { IJobHandler } from './interfaces/job-handler.interface.js';
+import type { ComputeJobType } from './types/compute-job.type.js';
 
 /**
  * Calcule la liste d'evenements d'un utilisateur (docs/matching/04, section 5). Ordre normatif :

@@ -2,44 +2,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { DataSource, EntityManager } from 'typeorm';
 import { PostgresProvider } from '@volontariapp/bridge';
 import { JobsOutboxEntity, JobsOutboxModel } from '@volontariapp/database';
-import {
-  RankingListKind,
-  RankingRequestService,
-} from '@volontariapp/domain-ranking';
+import { RankingRequestService } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
-import {
-  JobMessagingType,
-  RankingQueue,
-  type RankingComputeReason,
-} from '@volontariapp/messaging';
 import { JobsOutboxRepository } from '@volontariapp/outbox';
 import { CustomConfig } from '../config/custom-config.js';
-
-const JOB_EMITTER = 'ms-ranking';
-
-export interface ComputeRequest {
-  userId: string;
-  listKind: RankingListKind;
-  reason: RankingComputeReason;
-}
-
-export interface FollowUpJob {
-  userId: string;
-  listKind: RankingListKind;
-  reason: RankingComputeReason;
-  /** Date de la demande qui a survecu au calcul, telle que retournee par la base. */
-  requestedAt: string;
-}
-
-const COMPUTE_JOB_TYPE = {
-  [RankingListKind.EVENT]: JobMessagingType.COMPUTE_USER_RANKING,
-  [RankingListKind.POST]: JobMessagingType.COMPUTE_USER_FEED,
-} as const;
-
-const BACKGROUND_QUEUE = {
-  [RankingListKind.EVENT]: RankingQueue.RANKING,
-  [RankingListKind.POST]: RankingQueue.FEED,
-} as const;
+import {
+  BACKGROUND_QUEUE,
+  COMPUTE_JOB_TYPE,
+  JOB_EMITTER,
+} from './constants/ranking-job.constants.js';
+import type { ComputeRequest } from './interfaces/compute-request.interface.js';
+import type { FollowUpJob } from './interfaces/follow-up-job.interface.js';
 
 /**
  * Ecrit les jobs de calcul dans jobs_outbox : une demande par utilisateur (fan-out) ou le job de

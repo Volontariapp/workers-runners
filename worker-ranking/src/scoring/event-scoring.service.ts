@@ -12,43 +12,16 @@ import {
   haversineKm,
   isWithinRange,
   structuralEventScore,
-  type RankedEventItem,
-  type RankingCandidate,
   type RankingScorer,
-  type TasteSummary,
 } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
 import type { RankingEvent } from '../clients/interfaces/ranking-event.interface.js';
 import { CustomConfig } from '../config/custom-config.js';
-import type { CollectedEvents } from './event-candidate.service.js';
-
-export const RANKING_SCORER = 'RANKING_SCORER';
-
-export interface ScoredList {
-  items: RankedEventItem[];
-  /** FULL quand le scoreur semantique a repondu, STRUCTURAL_ONLY sinon. */
-  source: 'FULL' | 'STRUCTURAL_ONLY';
-  candidateCount: number;
-  semanticScoredCount: number;
-}
-
-const tasteOf = (history: readonly RankingEvent[]): TasteSummary => {
-  const ecology = history.filter((event) => event.type === 'ECOLOGY').length;
-  const total = history.length;
-  return {
-    ecologyShare: total === 0 ? 0 : ecology / total,
-    socialShare: total === 0 ? 0 : (total - ecology) / total,
-    history: history.map(toScorerCandidate),
-  };
-};
-
-const toScorerCandidate = (event: RankingEvent): RankingCandidate => ({
-  eventId: event.id,
-  name: event.name,
-  type: event.type,
-  tags: event.tags,
-  summary: event.summary,
-});
+import { RANKING_SCORER } from './constants/ranking-scorer.constants.js';
+import { tasteOf } from './helpers/taste-of.helpers.js';
+import { toScorerCandidate } from './helpers/to-scorer-candidate.helpers.js';
+import type { CollectedEvents } from './interfaces/collected-events.interface.js';
+import type { ScoredList } from './interfaces/scored-list.interface.js';
 
 /** Etapes 6 et 7 : score structurel, codes d'explication, score semantique optionnel, rangs. */
 @Injectable()

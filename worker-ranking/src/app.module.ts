@@ -9,6 +9,7 @@ import { NoopRankingScorer } from '@volontariapp/domain-ranking';
 import { PostgresProvider, RedisProvider } from '@volontariapp/bridge';
 import { CustomConfig } from './config/custom-config.js';
 import { config } from './config/runtime-config.js';
+import { logger } from './config/logger.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
 import { GrpcClientModule } from './infrastructure/grpc/grpc-client.module.js';
@@ -18,21 +19,13 @@ import { SocialRankingClient } from './clients/social-ranking.client.js';
 import { rankingDomainProviders } from './domain/ranking-domain.providers.js';
 import { RankingJobWriter } from './domain/ranking-job-writer.js';
 import { EventCandidateService } from './scoring/event-candidate.service.js';
-import {
-  EventScoringService,
-  RANKING_SCORER,
-} from './scoring/event-scoring.service.js';
+import { RANKING_SCORER } from './scoring/constants/ranking-scorer.constants.js';
+import { EventScoringService } from './scoring/event-scoring.service.js';
 import {
   ComputeUserRankingHandler,
   FanoutRankingHandler,
 } from './workers/handlers/index.js';
 import { RankingWorker, FallbackRankingWorker } from './workers/index.js';
-
-Logger.setDefaultConfig({ format: config.logger.format });
-const logger = new Logger({
-  context: 'WORKER-RANKING',
-  format: config.logger.format,
-});
 
 @Module({
   imports: [
@@ -114,4 +107,3 @@ export class AppModule implements OnApplicationShutdown {
     logger.info('Database and Redis connection pools closed successfully.');
   }
 }
-export { logger };

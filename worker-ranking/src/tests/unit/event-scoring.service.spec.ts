@@ -8,7 +8,7 @@ import {
   jest,
 } from '@jest/globals';
 import { EventScoringService } from '../../scoring/event-scoring.service.js';
-import type { CollectedEvents } from '../../scoring/event-candidate.service.js';
+import type { CollectedEvents } from '../../scoring/interfaces/collected-events.interface.js';
 import {
   NOW,
   PARIS,

@@ -3,7 +3,8 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { DiagnosticServer } from '@volontariapp/workers';
 import { loadConfig } from '@volontariapp/config';
-import { AppModule, logger } from './app.module.js';
+import { AppModule } from './app.module.js';
+import { logger } from './config/logger.js';
 import { CustomConfig } from './config/custom-config.js';
 import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 

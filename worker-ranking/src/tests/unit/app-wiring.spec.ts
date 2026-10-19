@@ -21,10 +21,8 @@ import { SocialRankingClient } from '../../clients/social-ranking.client.js';
 import { CustomConfig } from '../../config/custom-config.js';
 import { RankingJobWriter } from '../../domain/ranking-job-writer.js';
 import { EventCandidateService } from '../../scoring/event-candidate.service.js';
-import {
-  EventScoringService,
-  RANKING_SCORER,
-} from '../../scoring/event-scoring.service.js';
+import { RANKING_SCORER } from '../../scoring/constants/ranking-scorer.constants.js';
+import { EventScoringService } from '../../scoring/event-scoring.service.js';
 import {
   EVENT_PACKAGE,
   SOCIAL_PACKAGE,

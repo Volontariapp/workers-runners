@@ -9,15 +9,11 @@ import { JobMessagingType, type JobRegistry } from '@volontariapp/messaging';
 import type { JobOf } from '@volontariapp/workers';
 import { SocialRankingClient } from '../../clients/social-ranking.client.js';
 import { CustomConfig } from '../../config/custom-config.js';
-import {
-  RankingJobWriter,
-  type ComputeRequest,
-} from '../../domain/ranking-job-writer.js';
-import type { IJobHandler } from './job-handler.interface.js';
-
-type FanoutJobType = typeof JobMessagingType.FANOUT_RANKING;
-
-const ACTIVE_USERS_PAGE = 200;
+import type { ComputeRequest } from '../../domain/interfaces/compute-request.interface.js';
+import { RankingJobWriter } from '../../domain/ranking-job-writer.js';
+import { ACTIVE_USERS_PAGE } from './constants/fanout-ranking.constants.js';
+import type { IJobHandler } from './interfaces/job-handler.interface.js';
+import type { FanoutJobType } from './types/fanout-job.type.js';
 
 /** Transforme un evenement de plateforme en demandes de calcul, une par utilisateur concerne. */
 @Injectable()
