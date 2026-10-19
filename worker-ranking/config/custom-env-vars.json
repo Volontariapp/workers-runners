@@ -12,5 +12,26 @@
     "password": "REDIS_PASSWORD",
     "dbIndex": "REDIS_DB_INDEX"
   },
-  "port": "PORT"
+  "port": "PORT",
+  "microServices": {
+    "msSocialUrl": "MS_SOCIAL_URL",
+    "msEventUrl": "MS_EVENT_URL"
+  },
+  "auth": {
+    "internalPrivateKeyPath": "INTERNAL_PRIVATE_KEY_PATH"
+  },
+  "ranking": {
+    "listSize": "RANKING_LIST_SIZE",
+    "candidateLimit": "RANKING_CANDIDATE_LIMIT",
+    "historySize": "RANKING_HISTORY_SIZE",
+    "excludeLimit": "RANKING_EXCLUDE_LIMIT",
+    "passCooldownDays": "RANKING_PASS_COOLDOWN_DAYS",
+    "activeDays": "RANKING_ACTIVE_DAYS",
+    "maxFanout": "RANKING_MAX_FANOUT",
+    "buzzWindowDays": "RANKING_BUZZ_WINDOW_DAYS",
+    "requestTtlSeconds": "RANKING_REQUEST_TTL_SECONDS",
+    "debounceSeconds": "RANKING_DEBOUNCE_SECONDS",
+    "workerConcurrency": "RANKING_WORKER_CONCURRENCY",
+    "locationKey": "RANKING_LOCATION_KEY"
+  }
 }

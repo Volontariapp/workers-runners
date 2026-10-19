@@ -18,5 +18,26 @@
     "password": "password",
     "dbIndex": 0
   },
-  "port": 4107
+  "port": 4107,
+  "microServices": {
+    "msSocialUrl": "localhost:5004",
+    "msEventUrl": "localhost:5003"
+  },
+  "auth": {
+    "internalPrivateKeyPath": "certs/internal.key",
+    "internalExpiresIn": "1h"
+  },
+  "ranking": {
+    "listSize": 100,
+    "candidateLimit": 150,
+    "historySize": 20,
+    "excludeLimit": 500,
+    "passCooldownDays": 30,
+    "activeDays": 30,
+    "maxFanout": 1000,
+    "buzzWindowDays": 14,
+    "requestTtlSeconds": 120,
+    "debounceSeconds": 30,
+    "workerConcurrency": 5
+  }
 }
