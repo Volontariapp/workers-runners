@@ -15,6 +15,6 @@ jobs:
       packages: write
     with:
       service-name: workers-runners
-      services: '["worker-user", "worker-event", "worker-post", "worker-social", "worker-storage"]'
+      services: '["worker-user", "worker-event", "worker-post", "worker-social", "worker-storage", "worker-ranking"]'
     secrets:
       ORG_REPO_TOKEN: ${{ secrets.ORG_REPO_TOKEN }}
