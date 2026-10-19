@@ -1,7 +1,7 @@
 import { createMock } from '@volontariapp/testing';
 import type { JobOf } from '@volontariapp/workers';
 import type { JobMessagingType } from '@volontariapp/messaging';
-import type { RankingEvent } from '../../clients/ranking-event.js';
+import type { RankingEvent } from '../../clients/interfaces/ranking-event.interface.js';
 import type { CustomConfig } from '../../config/custom-config.js';
 
 export const USER_ID = '11111111-1111-4111-a111-111111111111';

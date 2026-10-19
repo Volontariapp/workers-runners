@@ -18,7 +18,7 @@ import {
   type TasteSummary,
 } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
-import type { RankingEvent } from '../clients/ranking-event.js';
+import type { RankingEvent } from '../clients/interfaces/ranking-event.interface.js';
 import { CustomConfig } from '../config/custom-config.js';
 import type { CollectedEvents } from './event-candidate.service.js';
 

@@ -1,13 +1,5 @@
-export interface IdsPage {
-  ids: readonly string[];
-  totalPages: number;
-}
-
-export interface CollectOptions {
-  pageSize: number;
-  /** Plafond d'identifiants lus ; absent = jusqu'a epuisement. */
-  max?: number;
-}
+import type { CollectOptions } from '../interfaces/collect-options.interface.js';
+import type { IdsPage } from '../interfaces/ids-page.interface.js';
 
 /** Lit les pages d'une RPC paginee jusqu'a epuisement ou plafond, sans doublon. */
 export const collectIds = async (

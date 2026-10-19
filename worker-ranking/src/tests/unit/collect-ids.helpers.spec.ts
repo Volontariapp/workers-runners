@@ -1,7 +1,8 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import { collectIds, type IdsPage } from '../../clients/paginated-ids.js';
+import { collectIds } from '../../clients/helpers/collect-ids.helpers.js';
+import type { IdsPage } from '../../clients/interfaces/ids-page.interface.js';
 
-describe('collectIds (Unit)', () => {
+describe('collectIds helper (Unit)', () => {
   const pages: Record<number, IdsPage> = {
     1: { ids: ['a', 'b'], totalPages: 3 },
     2: { ids: ['b', 'c'], totalPages: 3 },

@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Metadata } from '@grpc/grpc-js';
 import { INTERNAL_TOKEN_METADATA_KEY, JwtService } from '@volontariapp/auth';
 import { UserRoles } from '@volontariapp/shared';
-
-const TOKEN_CACHE_MS = 4 * 60 * 1000;
-const WORKER_IDENTITY = 'worker-ranking';
+import {
+  TOKEN_CACHE_MS,
+  WORKER_IDENTITY,
+} from './constants/internal-token.constants.js';
 
 /** Jeton interne ADMIN signe par le worker, mis en cache 4 minutes pour tous les appels gRPC. */
 @Injectable()

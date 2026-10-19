@@ -7,7 +7,7 @@ import {
 } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
 import { EventRankingClient } from '../clients/event-ranking.client.js';
-import type { RankingEvent } from '../clients/ranking-event.js';
+import type { RankingEvent } from '../clients/interfaces/ranking-event.interface.js';
 import { SocialRankingClient } from '../clients/social-ranking.client.js';
 import { CustomConfig } from '../config/custom-config.js';
 

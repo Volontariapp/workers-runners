@@ -1,41 +1,20 @@
 import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import type { ClientGrpc } from '@nestjs/microservices';
-import type { Metadata } from '@grpc/grpc-js';
-import { firstValueFrom, type Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import {
   EVENT_QUERY_SERVICE_NAME,
   EventState,
   type EventQueryServiceClient,
   type SearchEventsQuery,
-  type SearchEventsResponse,
 } from '@volontariapp/contracts-nest';
 import { MAX_DISTANCE_KM, type GeoPoint } from '@volontariapp/domain-ranking';
 import { EVENT_PACKAGE } from '../infrastructure/grpc/constants.js';
 import { InternalMetadataProvider } from './internal-metadata.provider.js';
-import { toRankingEvent, type RankingEvent } from './ranking-event.js';
-
-/** Plafond d'une page de ms-event. */
-const MAX_PAGE_LIMIT = 100;
-
-interface EventQueryClientWithMetadata extends EventQueryServiceClient {
-  searchEvents(
-    request: SearchEventsQuery,
-    metadata?: Metadata,
-  ): Observable<SearchEventsResponse>;
-}
-
-const emptyQuery = (): SearchEventsQuery => ({
-  area: undefined,
-  types: [],
-  tagSlugs: [],
-  onlyAvailable: false,
-  searchTerm: '',
-  organizerId: '',
-  ids: [],
-  excludedIds: [],
-  statuses: [],
-  pagination: undefined,
-});
+import { MAX_PAGE_LIMIT } from './constants/event-ranking.constants.js';
+import { emptySearchQuery } from './helpers/empty-search-query.helpers.js';
+import { toRankingEvent } from './helpers/to-ranking-event.helpers.js';
+import type { EventQueryClientWithMetadata } from './interfaces/event-query-client-with-metadata.interface.js';
+import type { RankingEvent } from './interfaces/ranking-event.interface.js';
 
 /** Lectures de ms-event, source de verite des candidats (aucune pagination implicite). */
 @Injectable()
@@ -63,7 +42,7 @@ export class EventRankingClient implements OnModuleInit {
     origin: GeoPoint | null,
   ): Promise<RankingEvent[]> {
     return this.search({
-      ...emptyQuery(),
+      ...emptySearchQuery(),
       statuses: [EventState.EVENT_STATE_PUBLISHED],
       startDateFrom: now.toISOString(),
       area: origin
@@ -82,7 +61,7 @@ export class EventRankingClient implements OnModuleInit {
       return [];
     }
     return this.search({
-      ...emptyQuery(),
+      ...emptySearchQuery(),
       ids: [...ids],
       pagination: { page: 1, limit: Math.min(ids.length, MAX_PAGE_LIMIT) },
     });
