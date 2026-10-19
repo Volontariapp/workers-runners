@@ -4,6 +4,8 @@ import type { EventTieState } from '@volontariapp/domain-ranking';
 export const LIKE_BACKFILL_AGE_DAYS = 30;
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const HOUR_MS = 60 * 60 * 1000;
+/** Appels GetEventPosts simultanes au plus. */
+export const EVENT_POSTS_CONCURRENCY = 5;
 
 /** Ordre des liens evenement : un post lie a plusieurs evenements garde le plus fort. */
 export const EVENT_TIE_STRENGTH: Record<EventTieState, number> = {

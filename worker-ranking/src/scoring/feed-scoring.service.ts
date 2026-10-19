@@ -24,10 +24,10 @@ export class FeedScoringService {
 
   rank(collected: CollectedPosts, now: Date): ScoredFeed {
     const { feedListSize } = this.customConfig.ranking;
-    const ordered = [
-      ...rankFeed(collected.personal.map((entry) => this.score(entry, now))),
-      ...rankFeed(collected.global.map((entry) => this.score(entry, now))),
-    ].slice(0, feedListSize);
+    const ordered = rankFeed(
+      collected.personal.map((entry) => this.score(entry, now)),
+      collected.global.map((entry) => this.score(entry, now)),
+    ).slice(0, feedListSize);
 
     return {
       items: ordered.map((entry, index) => ({

@@ -2,6 +2,8 @@ import { PostMediaStatus } from '@volontariapp/contracts-nest';
 
 /** Plafond d'identifiants d'un appel ListPostsByIds (cote ms-post). */
 export const POST_IDS_BATCH = 100;
+/** Appels ListPostsByIds simultanes au plus. */
+export const POST_IDS_CONCURRENCY = 5;
 /** Plafond global d'un appel ListRecentPostsByAuthors (cote ms-post). */
 export const RECENT_POSTS_LIMIT = 300;
 /** Posts par auteur : un auteur prolifique n'affame pas les autres. */

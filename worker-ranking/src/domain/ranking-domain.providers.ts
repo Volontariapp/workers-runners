@@ -56,10 +56,6 @@ export const rankingDomainProviders: Provider[] = [
   RankingLikeLogService,
   RankingLocationService,
   RankingFeedbackService,
-  RankingLikeLogModel,
-  RankingLikeLogService,
-  RankingPostScoreModel,
-  RankingPostScoreService,
   RankingWishService,
   RankingMentionService,
 ];

@@ -137,9 +137,13 @@ export class SocialFeedClient implements OnModuleInit {
     return friends;
   }
 
-  /** Likes du graphe (verite de l'existence d'un like), pagines par 50, au plus `max`. */
+  /**
+   * Likes du graphe (verite de l'existence d'un like), pagines par 50, au plus `max`. La lecture
+   * n'est dite complete que si elle tient sur une seule page sans plafond : la pagination du graphe
+   * n'a pas d'ORDER BY, une lecture en plusieurs pages peut sauter un vrai like.
+   */
   async likedPostIds(userId: string, max: number): Promise<LikedPosts> {
-    const read = { exhausted: false };
+    const read = { totalPages: 0, firstPageSize: 0 };
     const ids = await collectIds(
       async (page, limit) => {
         const result = toIdsPage(
@@ -150,12 +154,18 @@ export class SocialFeedClient implements OnModuleInit {
             ),
           ),
         );
-        read.exhausted = page >= result.totalPages;
+        if (page === 1) {
+          read.totalPages = result.totalPages;
+          read.firstPageSize = result.ids.length;
+        }
         return result;
       },
       { pageSize: PAGE_SIZE, max },
     );
-    return { ids, complete: read.exhausted && ids.length < max };
+    return {
+      ids,
+      complete: read.totalPages <= 1 && read.firstPageSize <= max,
+    };
   }
 
   /** Posts lies a un evenement, une page de 50 au plus. */

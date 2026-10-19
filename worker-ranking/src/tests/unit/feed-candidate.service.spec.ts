@@ -7,7 +7,16 @@ import {
   it,
   jest,
 } from '@jest/globals';
+import { of } from 'rxjs';
+import { RELATIONSHIP_QUERY_SERVICE_NAME } from '@volontariapp/contracts-nest';
+import { SocialFeedClient } from '../../clients/social-feed.client.js';
 import { FeedCandidateService } from '../../scoring/feed-candidate.service.js';
+import { buildIdsResponse } from '../factories/grpc.factory.js';
+import {
+  createMockClientGrpc,
+  createMockInternalMetadata,
+  createMockRelationshipService,
+} from '../mocks/grpc.mock.js';
 import {
   AUTHOR_A,
   AUTHOR_B,
@@ -92,7 +101,54 @@ describe('FeedCandidateService (Unit)', () => {
     expect(result.global.map((entry) => entry.origin)).toEqual(['GLOBAL']);
   });
 
-  it('excludes the authors blocked in both directions, the own posts and pending media', async () => {
+  it('excludes an author who blocked the user, read from AdminGetWhoBlockedMe only', async () => {
+    const relationship = createMockRelationshipService();
+    jest
+      .spyOn(relationship, 'adminGetMyFollows')
+      .mockReturnValue(of(buildIdsResponse([AUTHOR_A, AUTHOR_B], 1)));
+    const myBlocksSpy = jest
+      .spyOn(relationship, 'adminGetMyBlocks')
+      .mockReturnValue(of(buildIdsResponse([], 0)));
+    const blockedMeSpy = jest
+      .spyOn(relationship, 'adminGetWhoBlockedMe')
+      .mockReturnValue(of(buildIdsResponse([AUTHOR_B], 1)));
+    jest
+      .spyOn(relationship, 'adminGetIsFollowing')
+      .mockReturnValue(of({ isFollowing: false }));
+    const realSocialFeed = new SocialFeedClient(
+      createMockClientGrpc(
+        new Map<string, object>([
+          [RELATIONSHIP_QUERY_SERVICE_NAME, relationship],
+        ]),
+      ),
+      createMockInternalMetadata(),
+    );
+    realSocialFeed.onModuleInit();
+    recentSpy.mockResolvedValue([
+      buildRankingPost('kept'),
+      buildRankingPost('from-blocker', { authorId: AUTHOR_B }),
+    ]);
+    globalSpy.mockResolvedValue([
+      buildRankingPost('global-from-blocker', { authorId: AUTHOR_B }),
+    ]);
+
+    const result = await new FeedCandidateService(
+      signals,
+      realSocialFeed,
+      socialRanking,
+      events,
+      posts,
+      buildConfig(),
+    ).collect(USER_ID, NOW);
+
+    expect(myBlocksSpy).toHaveBeenCalledTimes(1);
+    expect(blockedMeSpy.mock.calls[0]?.[0].userId).toBe(USER_ID);
+    expect(recentSpy.mock.calls[0]?.[0]).toEqual([AUTHOR_A]);
+    expect(result.personal.map((entry) => entry.post.id)).toEqual(['kept']);
+    expect(result.global).toEqual([]);
+  });
+
+  it('excludes the blocked authors, the own posts and pending media', async () => {
     followedSpy.mockResolvedValue([AUTHOR_A, AUTHOR_B]);
     blockedSpy.mockResolvedValue(new Set([AUTHOR_B]));
     recentSpy.mockResolvedValue([

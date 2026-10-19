@@ -7,7 +7,8 @@ import { PostRankingClient } from '../clients/post-ranking.client.js';
 import { SocialFeedClient } from '../clients/social-feed.client.js';
 import { SocialRankingClient } from '../clients/social-ranking.client.js';
 import { CustomConfig } from '../config/custom-config.js';
-import { DAY_MS } from './constants/feed.constants.js';
+import { chunk } from '../clients/helpers/chunk.helpers.js';
+import { DAY_MS, EVENT_POSTS_CONCURRENCY } from './constants/feed.constants.js';
 import { FeedSignalService } from './feed-signal.service.js';
 import { authorPriority } from './helpers/author-priority.helpers.js';
 import { eventTieOf } from './helpers/event-tie-of.helpers.js';
@@ -152,16 +153,18 @@ export class FeedCandidateService {
       );
       return tie === 'NONE' ? [] : [{ eventId: event.id, tie }];
     });
-    const postIdsPerEvent = await Promise.all(
-      tied.map(async ({ eventId, tie }) => ({
-        tie,
-        postIds: await this.socialFeed.eventPostIds(eventId),
-      })),
-    );
     const ties = new Map<string, EventTieState>();
-    for (const { tie, postIds } of postIdsPerEvent) {
-      for (const postId of postIds) {
-        ties.set(postId, strongerTie(ties.get(postId) ?? 'NONE', tie));
+    for (const wave of chunk(tied, EVENT_POSTS_CONCURRENCY)) {
+      const postIdsPerEvent = await Promise.all(
+        wave.map(async ({ eventId, tie }) => ({
+          tie,
+          postIds: await this.socialFeed.eventPostIds(eventId),
+        })),
+      );
+      for (const { tie, postIds } of postIdsPerEvent) {
+        for (const postId of postIds) {
+          ties.set(postId, strongerTie(ties.get(postId) ?? 'NONE', tie));
+        }
       }
     }
     this.logger.info(

@@ -27,24 +27,27 @@ describe('FeedSignalService (Unit)', () => {
   const posts = createMockPostClient();
   const likeLog = createMockLikeLogService();
   let reconcileSpy: jest.SpiedFunction<typeof likeLog.reconcileWithGraph>;
+  let graphLikesSpy: jest.SpiedFunction<typeof social.likedPostIds>;
+  let listActiveSpy: jest.SpiedFunction<typeof likeLog.listActive>;
+  let byIdsSpy: jest.SpiedFunction<typeof posts.byIds>;
   let service: FeedSignalService;
 
   beforeEach(() => {
     service = new FeedSignalService(social, posts, likeLog, buildConfig());
-    jest
+    graphLikesSpy = jest
       .spyOn(social, 'likedPostIds')
       .mockResolvedValue({ ids: ['liked'], complete: true });
     reconcileSpy = jest
       .spyOn(likeLog, 'reconcileWithGraph')
       .mockResolvedValue({ tombstoned: 1, backfilled: 0 });
-    jest.spyOn(likeLog, 'listActive').mockResolvedValue([
+    listActiveSpy = jest.spyOn(likeLog, 'listActive').mockResolvedValue([
       { postId: 'liked', occurredAt: new Date(NOW.getTime() - 2 * DAY_MS) },
       { postId: 'own', occurredAt: NOW },
     ]);
     jest
       .spyOn(posts, 'commentsByAuthor')
       .mockResolvedValue([{ postId: 'commented', createdAt: NOW }]);
-    jest
+    byIdsSpy = jest
       .spyOn(posts, 'byIds')
       .mockResolvedValue([
         buildRankingPost('liked'),
@@ -67,6 +70,14 @@ describe('FeedSignalService (Unit)', () => {
       graphIsComplete: true,
       fallbackAt: new Date(NOW.getTime() - 30 * DAY_MS),
     });
+    const graphRead = graphLikesSpy.mock.invocationCallOrder[0] ?? 0;
+    const reconcile = reconcileSpy.mock.invocationCallOrder[0] ?? 0;
+    const activeRead = listActiveSpy.mock.invocationCallOrder[0] ?? 0;
+    const authorsRead = byIdsSpy.mock.invocationCallOrder[0] ?? 0;
+    expect(graphRead).toBeGreaterThan(0);
+    expect(graphRead).toBeLessThan(reconcile);
+    expect(reconcile).toBeLessThan(activeRead);
+    expect(activeRead).toBeLessThan(authorsRead);
   });
 
   it('groups likes and comments by post author and ignores the own posts', async () => {

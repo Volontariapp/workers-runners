@@ -13,6 +13,7 @@ import {
   COMMENTS_LIMIT,
   PER_AUTHOR_LIMIT,
   POST_IDS_BATCH,
+  POST_IDS_CONCURRENCY,
   RECENT_POSTS_LIMIT,
 } from './constants/post-ranking.constants.js';
 import { chunk } from './helpers/chunk.helpers.js';
@@ -55,18 +56,22 @@ export class PostRankingClient implements OnModuleInit {
 
   /** Posts par identifiants, par lots de 100 ; les identifiants absents sont ignores. */
   async byIds(ids: readonly string[]): Promise<RankingPost[]> {
-    const unique = [...new Set(ids)];
-    const pages = await Promise.all(
-      chunk(unique, POST_IDS_BATCH).map(async (batch) =>
-        firstValueFrom(
-          this.posts.listPostsByIds(
-            { ids: batch },
-            await this.internalMetadata.get(),
+    const batches = chunk([...new Set(ids)], POST_IDS_BATCH);
+    const posts: Post[] = [];
+    for (const wave of chunk(batches, POST_IDS_CONCURRENCY)) {
+      const pages = await Promise.all(
+        wave.map(async (batch) =>
+          firstValueFrom(
+            this.posts.listPostsByIds(
+              { ids: batch },
+              await this.internalMetadata.get(),
+            ),
           ),
         ),
-      ),
-    );
-    return this.toPosts(pages.flatMap((page) => page.posts));
+      );
+      posts.push(...pages.flatMap((page) => page.posts));
+    }
+    return this.toPosts(posts);
   }
 
   /** Commentaires de l'utilisateur depuis `since`, avec leur date (aucun registre local). */

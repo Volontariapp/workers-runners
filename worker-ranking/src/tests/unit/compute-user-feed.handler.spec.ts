@@ -28,6 +28,7 @@ import {
   createMockRequestService,
   createMockRunService,
 } from '../mocks/ranking.mock.js';
+import { createMockEntityManager } from '../mocks/transaction.mock.js';
 
 const PAYLOAD = {
   userId: USER_ID,
@@ -111,18 +112,20 @@ describe('ComputeUserFeedHandler (Unit)', () => {
   });
 
   it('writes a POST follow-up job in the same transaction when a request arrived during the compute', async () => {
+    const manager = createMockEntityManager();
     replaceListSpy.mockImplementation(async (_params, afterWrite) => {
       const result: ReplaceListResult = {
         written: true,
         followUpRequired: true,
         followUpRequestedAt: '2026-10-19 10:00:09.5+00',
       };
-      await afterWrite?.({} as never, result);
+      await afterWrite?.(manager, result);
       return result;
     });
 
     await handler.handle(buildJob(PAYLOAD));
 
+    expect(followUpSpy.mock.calls[0]?.[0]).toBe(manager);
     expect(followUpSpy.mock.calls[0]?.[1]).toEqual({
       userId: USER_ID,
       listKind: RankingListKind.POST,
