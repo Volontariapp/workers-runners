@@ -6,7 +6,9 @@ import { JwtService } from '@volontariapp/auth';
 import {
   NoopRankingScorer,
   RankingFeedbackService,
+  RankingLikeLogService,
   RankingLocationService,
+  RankingPostScoreService,
   RankingMentionService,
   RankingRequestService,
   RankingRunService,
@@ -18,20 +20,31 @@ import { createMock } from '@volontariapp/testing';
 import { InternalMetadataProvider } from '../../clients/internal-metadata.provider.js';
 import { EventRankingClient } from '../../clients/event-ranking.client.js';
 import { SocialRankingClient } from '../../clients/social-ranking.client.js';
+import { SocialFeedClient } from '../../clients/social-feed.client.js';
+import { PostRankingClient } from '../../clients/post-ranking.client.js';
 import { CustomConfig } from '../../config/custom-config.js';
 import { RankingJobWriter } from '../../domain/ranking-job-writer.js';
 import { EventCandidateService } from '../../scoring/event-candidate.service.js';
 import { RANKING_SCORER } from '../../scoring/constants/ranking-scorer.constants.js';
 import { EventScoringService } from '../../scoring/event-scoring.service.js';
+import { FeedCandidateService } from '../../scoring/feed-candidate.service.js';
+import { FeedScoringService } from '../../scoring/feed-scoring.service.js';
+import { FeedSignalService } from '../../scoring/feed-signal.service.js';
 import {
   EVENT_PACKAGE,
+  POST_PACKAGE,
   SOCIAL_PACKAGE,
 } from '../../infrastructure/grpc/constants.js';
 import {
+  ComputeUserFeedHandler,
   ComputeUserRankingHandler,
   FanoutRankingHandler,
 } from '../../workers/handlers/index.js';
-import { FallbackRankingWorker, RankingWorker } from '../../workers/index.js';
+import {
+  FallbackRankingWorker,
+  RankingFeedWorker,
+  RankingWorker,
+} from '../../workers/index.js';
 import { buildConfig } from '../factories/ranking.factory.js';
 
 const leaf = (token: unknown) => ({
@@ -49,6 +62,7 @@ describe('worker-ranking dependency injection (Unit)', () => {
         leaf(JwtService),
         leaf(SOCIAL_PACKAGE),
         leaf(EVENT_PACKAGE),
+        leaf(POST_PACKAGE),
         leaf(RankingRunService),
         leaf(RankingRequestService),
         leaf(RankingScoreService),
@@ -56,16 +70,25 @@ describe('worker-ranking dependency injection (Unit)', () => {
         leaf(RankingFeedbackService),
         leaf(RankingWishService),
         leaf(RankingMentionService),
+        leaf(RankingPostScoreService),
+        leaf(RankingLikeLogService),
         { provide: RANKING_SCORER, useClass: NoopRankingScorer },
         InternalMetadataProvider,
         SocialRankingClient,
         EventRankingClient,
+        SocialFeedClient,
+        PostRankingClient,
         RankingJobWriter,
         EventCandidateService,
         EventScoringService,
+        FeedSignalService,
+        FeedCandidateService,
+        FeedScoringService,
         ComputeUserRankingHandler,
+        ComputeUserFeedHandler,
         FanoutRankingHandler,
         RankingWorker,
+        RankingFeedWorker,
         FallbackRankingWorker,
       ],
     }).compile();
@@ -78,6 +101,10 @@ describe('worker-ranking dependency injection (Unit)', () => {
       'ranking.compute_user_ranking',
     );
     expect(moduleRef.get(FanoutRankingHandler).jobType).toBe('ranking.fanout');
+    expect(moduleRef.get(RankingFeedWorker)).toBeInstanceOf(RankingFeedWorker);
+    expect(moduleRef.get(ComputeUserFeedHandler).jobType).toBe(
+      'ranking.compute_user_feed',
+    );
   });
 
   it('uses the structural-only scorer by default', async () => {

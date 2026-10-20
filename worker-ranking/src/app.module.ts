@@ -16,16 +16,26 @@ import { GrpcClientModule } from './infrastructure/grpc/grpc-client.module.js';
 import { InternalMetadataProvider } from './clients/internal-metadata.provider.js';
 import { EventRankingClient } from './clients/event-ranking.client.js';
 import { SocialRankingClient } from './clients/social-ranking.client.js';
+import { SocialFeedClient } from './clients/social-feed.client.js';
+import { PostRankingClient } from './clients/post-ranking.client.js';
 import { rankingDomainProviders } from './domain/ranking-domain.providers.js';
 import { RankingJobWriter } from './domain/ranking-job-writer.js';
 import { EventCandidateService } from './scoring/event-candidate.service.js';
 import { RANKING_SCORER } from './scoring/constants/ranking-scorer.constants.js';
 import { EventScoringService } from './scoring/event-scoring.service.js';
+import { FeedSignalService } from './scoring/feed-signal.service.js';
+import { FeedCandidateService } from './scoring/feed-candidate.service.js';
+import { FeedScoringService } from './scoring/feed-scoring.service.js';
 import {
+  ComputeUserFeedHandler,
   ComputeUserRankingHandler,
   FanoutRankingHandler,
 } from './workers/handlers/index.js';
-import { RankingWorker, FallbackRankingWorker } from './workers/index.js';
+import {
+  FallbackRankingWorker,
+  RankingFeedWorker,
+  RankingWorker,
+} from './workers/index.js';
 
 @Module({
   imports: [
@@ -39,6 +49,7 @@ import { RankingWorker, FallbackRankingWorker } from './workers/index.js';
     }),
     BullModule.registerQueue(
       { name: RankingQueue.RANKING },
+      { name: RankingQueue.FEED },
       { name: RankingQueue.FALLBACK_RANKING },
     ),
     AuthModule.registerGateway(config.auth),
@@ -81,12 +92,19 @@ import { RankingWorker, FallbackRankingWorker } from './workers/index.js';
     InternalMetadataProvider,
     SocialRankingClient,
     EventRankingClient,
+    SocialFeedClient,
+    PostRankingClient,
     RankingJobWriter,
     EventCandidateService,
     EventScoringService,
+    FeedSignalService,
+    FeedCandidateService,
+    FeedScoringService,
     ComputeUserRankingHandler,
+    ComputeUserFeedHandler,
     FanoutRankingHandler,
     RankingWorker,
+    RankingFeedWorker,
     FallbackRankingWorker,
   ],
 })

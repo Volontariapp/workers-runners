@@ -1,3 +1,4 @@
 export * from './interfaces/job-handler.interface.js';
 export * from './compute-user-ranking.handler.js';
+export * from './compute-user-feed.handler.js';
 export * from './fanout-ranking.handler.js';

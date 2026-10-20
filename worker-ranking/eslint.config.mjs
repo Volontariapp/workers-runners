@@ -20,6 +20,7 @@ export default tseslint.config(
             'src/tests/integration/*.spec.ts',
           ],
           defaultProject: 'tsconfig.eslint.json',
+          maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING: 30,
         },
         tsconfigRootDir: import.meta.dirname,
       },

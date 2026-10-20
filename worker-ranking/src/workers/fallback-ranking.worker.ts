@@ -9,6 +9,7 @@ import {
 } from '@volontariapp/messaging';
 import { config } from '../config/runtime-config.js';
 import {
+  ComputeUserFeedHandler,
   ComputeUserRankingHandler,
   type IJobHandler,
 } from './handlers/index.js';
@@ -25,9 +26,10 @@ export class FallbackRankingWorker extends BaseWorker<JobMessagingType> {
     @Inject(JobAuditRepository) auditRepo: JobAuditRepository,
     @Inject(ComputeUserRankingHandler)
     computeHandler: ComputeUserRankingHandler,
+    @Inject(ComputeUserFeedHandler) computeFeedHandler: ComputeUserFeedHandler,
   ) {
     super(auditRepo);
-    const handlers: IJobHandler[] = [computeHandler];
+    const handlers: IJobHandler[] = [computeHandler, computeFeedHandler];
     this.handlerMap = new Map(
       handlers.map((handler) => [handler.jobType, handler]),
     );

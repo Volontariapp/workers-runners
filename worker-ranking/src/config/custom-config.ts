@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDefined,
   IsInt,
   IsNotEmpty,
@@ -8,8 +9,9 @@ import {
   Min,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { BaseConfig, PostgresConfig, RedisConfig } from '@volontariapp/config';
+import { booleanFlag } from './helpers/boolean-flag.helpers.js';
 
 export class MicroServicesConfig {
   @IsDefined()
@@ -21,6 +23,11 @@ export class MicroServicesConfig {
   @IsString()
   @IsNotEmpty()
   msEventUrl!: string;
+
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  msPostUrl!: string;
 }
 
 export class AuthConfigDetails {
@@ -102,6 +109,54 @@ export class RankingConfig {
   @IsString()
   @IsNotEmpty()
   locationKey!: string;
+
+  /** Lignes conservees par utilisateur pour le feed (RANKING_FEED_LIST_SIZE). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedListSize!: number;
+
+  /** Auteurs candidats au plus : signaux puis abonnements (RANKING_FEED_AUTHORS). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedAuthors!: number;
+
+  /** Age maximal d'un post hors lien evenement (RANKING_FEED_MAX_AGE_DAYS). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedMaxAgeDays!: number;
+
+  /** Age maximal d'un post lie a un evenement de l'utilisateur (RANKING_FEED_EVENT_POST_MAX_AGE_DAYS). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedEventPostMaxAgeDays!: number;
+
+  /** Plafond d'un fan-out POST_CREATED (RANKING_FEED_MAX_FANOUT). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedMaxFanout!: number;
+
+  /** Minimum de posts personnels avant le complement GLOBAL (RANKING_FEED_MIN_ITEMS). */
+  @IsDefined()
+  @IsInt()
+  @Min(0)
+  feedMinItems!: number;
+
+  /** Likes du graphe reconcilies par calcul (RANKING_FEED_LIKES_LIMIT). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  feedLikesLimit!: number;
+
+  /** Complement GLOBAL apres les posts personnels, active par defaut (RANKING_FEED_GLOBAL_ENABLED). */
+  @IsDefined()
+  @Transform(booleanFlag('feedGlobalEnabled'))
+  @IsBoolean()
+  feedGlobalEnabled!: boolean;
 }
 
 export class CustomConfig extends BaseConfig {

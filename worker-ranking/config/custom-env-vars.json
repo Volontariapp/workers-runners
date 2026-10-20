@@ -15,7 +15,8 @@
   "port": "PORT",
   "microServices": {
     "msSocialUrl": "MS_SOCIAL_URL",
-    "msEventUrl": "MS_EVENT_URL"
+    "msEventUrl": "MS_EVENT_URL",
+    "msPostUrl": "MS_POST_URL"
   },
   "auth": {
     "internalPrivateKeyPath": "INTERNAL_PRIVATE_KEY_PATH"
@@ -32,6 +33,14 @@
     "requestTtlSeconds": "RANKING_REQUEST_TTL_SECONDS",
     "debounceSeconds": "RANKING_DEBOUNCE_SECONDS",
     "workerConcurrency": "RANKING_WORKER_CONCURRENCY",
-    "locationKey": "RANKING_LOCATION_KEY"
+    "locationKey": "RANKING_LOCATION_KEY",
+    "feedListSize": "RANKING_FEED_LIST_SIZE",
+    "feedAuthors": "RANKING_FEED_AUTHORS",
+    "feedMaxAgeDays": "RANKING_FEED_MAX_AGE_DAYS",
+    "feedEventPostMaxAgeDays": "RANKING_FEED_EVENT_POST_MAX_AGE_DAYS",
+    "feedMaxFanout": "RANKING_FEED_MAX_FANOUT",
+    "feedMinItems": "RANKING_FEED_MIN_ITEMS",
+    "feedLikesLimit": "RANKING_FEED_LIKES_LIMIT",
+    "feedGlobalEnabled": "RANKING_FEED_GLOBAL_ENABLED"
   }
 }
