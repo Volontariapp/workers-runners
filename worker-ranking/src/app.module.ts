@@ -22,6 +22,7 @@ import { rankingDomainProviders } from './domain/ranking-domain.providers.js';
 import { RankingJobWriter } from './domain/ranking-job-writer.js';
 import { EventCandidateService } from './scoring/event-candidate.service.js';
 import { RANKING_SCORER } from './scoring/constants/ranking-scorer.constants.js';
+import { JevRankingScorer } from './scoring/adapters/jev-ranking-scorer.js';
 import { EventScoringService } from './scoring/event-scoring.service.js';
 import { FeedSignalService } from './scoring/feed-signal.service.js';
 import { FeedCandidateService } from './scoring/feed-candidate.service.js';
@@ -88,7 +89,19 @@ import {
       inject: [PostgresProvider],
     },
     ...rankingDomainProviders,
-    { provide: RANKING_SCORER, useClass: NoopRankingScorer },
+    {
+      provide: RANKING_SCORER,
+      useFactory: (customConfig: CustomConfig, log: Logger) => {
+        if (!customConfig.ranking.jevApiKey) {
+          log.info(
+            'TYPESAFE_API_KEY is not defined, using NoopRankingScorer (STRUCTURAL_ONLY)',
+          );
+          return new NoopRankingScorer();
+        }
+        return new JevRankingScorer(customConfig, log);
+      },
+      inject: [CustomConfig, Logger],
+    },
     InternalMetadataProvider,
     SocialRankingClient,
     EventRankingClient,

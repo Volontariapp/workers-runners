@@ -52,6 +52,13 @@ export const buildConfig = (
       feedMinItems: 20,
       feedLikesLimit: 200,
       feedGlobalEnabled: true,
+      jevApiKey: undefined,
+      jevBaseUrl: 'https://api.typesafe.ai/v1/systemone',
+      jevTimeoutMs: 10000,
+      jevModel: 'jev-latest',
+      jevCandidatesLimit: 30,
+      jevCircuitBreakerThreshold: 3,
+      jevCircuitBreakerCooldownMs: 60000,
       ...overrides,
     },
   }) as CustomConfig;

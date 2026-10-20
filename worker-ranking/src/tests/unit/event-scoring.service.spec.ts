@@ -159,4 +159,41 @@ describe('EventScoringService (Unit)', () => {
 
     expect(list.items).toEqual([]);
   });
+
+  it('caps unevaluated candidates under the minimum score of evaluated candidates', async () => {
+    const serviceWithLimit = new EventScoringService(
+      wishService,
+      feedbackService,
+      mentionService,
+      scorer,
+      buildConfig({ listSize: 3, jevCandidatesLimit: 1 }),
+    );
+
+    const bestStructural = buildRankingEvent('best', {
+      location: { lat: 48.8566, lng: 2.3522 },
+    });
+    const secondStructural = buildRankingEvent('second', {
+      location: { lat: 48.857, lng: 2.352 },
+    });
+
+    // Seul 'best' est evalue car jevCandidatesLimit = 1
+    // Jev lui donne une mauvaise note semantique de 0.1
+    scoreSpy.mockResolvedValue(new Map([['best', 0.1]]));
+
+    const list = await serviceWithLimit.rank(
+      collected({ candidates: [secondStructural, bestStructural] }),
+      NOW,
+    );
+
+    expect(list.source).toBe('FULL');
+    expect(list.semanticScoredCount).toBe(1);
+
+    const bestItem = list.items.find((item) => item.eventId === 'best');
+    const secondItem = list.items.find((item) => item.eventId === 'second');
+
+    expect(bestItem?.semanticScore).toBe(0.1);
+    expect(secondItem?.semanticScore).toBeNull();
+    // Le candidat non-evalue 'second' ne doit pas depasser le plancher de l'evalue 'best'
+    expect(secondItem?.score).toBeLessThanOrEqual(bestItem?.score ?? 1);
+  });
 });

@@ -41,6 +41,13 @@
     "feedMaxFanout": "RANKING_FEED_MAX_FANOUT",
     "feedMinItems": "RANKING_FEED_MIN_ITEMS",
     "feedLikesLimit": "RANKING_FEED_LIKES_LIMIT",
-    "feedGlobalEnabled": "RANKING_FEED_GLOBAL_ENABLED"
+    "feedGlobalEnabled": "RANKING_FEED_GLOBAL_ENABLED",
+    "jevApiKey": "TYPESAFE_API_KEY",
+    "jevBaseUrl": "JEV_URL",
+    "jevTimeoutMs": "JEV_TIMEOUT_MS",
+    "jevModel": "JEV_MODEL",
+    "jevCandidatesLimit": "RANKING_JEV_CANDIDATES",
+    "jevCircuitBreakerThreshold": "JEV_CIRCUIT_BREAKER_THRESHOLD",
+    "jevCircuitBreakerCooldownMs": "JEV_CIRCUIT_BREAKER_COOLDOWN_MS"
   }
 }

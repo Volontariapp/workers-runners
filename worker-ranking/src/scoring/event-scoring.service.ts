@@ -6,6 +6,7 @@ import {
   RankingWishService,
   assignRanks,
   blendScores,
+  capUnevaluated,
   computePopularity,
   eventReasons,
   eventScoreComponents,
@@ -38,7 +39,8 @@ export class EventScoringService {
 
   async rank(collected: CollectedEvents, now: Date): Promise<ScoredList> {
     const { candidates, history, friendTouched, origin } = collected;
-    const { listSize, buzzWindowDays } = this.customConfig.ranking;
+    const { listSize, buzzWindowDays, jevCandidatesLimit } =
+      this.customConfig.ranking;
     const ids = candidates.map((event) => event.id);
     const [wishes, passes, mentions] = await Promise.all([
       this.wishService.countByEvents(ids),
@@ -77,24 +79,43 @@ export class EventScoringService {
       ];
     });
 
-    const semantic = await this.semanticScores(
-      history,
-      structural.map(({ event }) => event),
+    // Tri par score structurel decroissant pour selectionner les 30 meilleurs candidats (docs/matching/05)
+    const sortedStructural = [...structural].sort(
+      (left, right) =>
+        right.structuralScore - left.structuralScore ||
+        left.event.id.localeCompare(right.event.id),
     );
-    const scored = structural.map((entry) => ({
-      id: entry.event.id,
-      score: blendScores(
-        entry.structuralScore,
-        semantic.get(entry.event.id),
-        EVENT_SEMANTIC_WEIGHT,
-      ),
-      structuralScore: entry.structuralScore,
-      semanticScore: semantic.get(entry.event.id) ?? null,
-      reasons: entry.reasons,
-    }));
+
+    const candidatesForJev = sortedStructural
+      .slice(0, jevCandidatesLimit)
+      .map(({ event }) => event);
+
+    const semantic =
+      candidatesForJev.length > 0
+        ? await this.semanticScores(history, candidatesForJev)
+        : new Map<string, number>();
+
+    const blended = sortedStructural.map((entry) => {
+      const semanticScore = semantic.get(entry.event.id);
+      return {
+        id: entry.event.id,
+        score: blendScores(
+          entry.structuralScore,
+          semanticScore,
+          EVENT_SEMANTIC_WEIGHT,
+        ),
+        structuralScore: entry.structuralScore,
+        semanticScore: semanticScore ?? null,
+        reasons: entry.reasons,
+        evaluated: semanticScore !== undefined,
+      };
+    });
+
+    // Plafonner les candidats non evalues sous le minimum des evalues (capUnevaluated)
+    const capped = capUnevaluated(blended);
 
     return {
-      items: assignRanks(scored, listSize).map((entry) => ({
+      items: assignRanks(capped, listSize).map((entry) => ({
         eventId: entry.id,
         score: entry.score,
         structuralScore: entry.structuralScore,

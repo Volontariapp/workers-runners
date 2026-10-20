@@ -47,6 +47,9 @@ import {
 } from '../../workers/index.js';
 import { buildConfig } from '../factories/ranking.factory.js';
 
+import { JevRankingScorer } from '../../scoring/adapters/jev-ranking-scorer.js';
+import { Logger } from '@volontariapp/logger';
+
 const leaf = (token: unknown) => ({
   provide: token,
   useValue: createMock<object>(),
@@ -57,6 +60,7 @@ describe('worker-ranking dependency injection (Unit)', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         { provide: CustomConfig, useValue: buildConfig() },
+        { provide: Logger, useValue: new Logger({ context: 'Test' }) },
         leaf(PostgresProvider),
         leaf(JobAuditRepository),
         leaf(JwtService),
@@ -72,7 +76,16 @@ describe('worker-ranking dependency injection (Unit)', () => {
         leaf(RankingMentionService),
         leaf(RankingPostScoreService),
         leaf(RankingLikeLogService),
-        { provide: RANKING_SCORER, useClass: NoopRankingScorer },
+        {
+          provide: RANKING_SCORER,
+          useFactory: (customConfig: CustomConfig, log: Logger) => {
+            if (!customConfig.ranking.jevApiKey) {
+              return new NoopRankingScorer();
+            }
+            return new JevRankingScorer(customConfig, log);
+          },
+          inject: [CustomConfig, Logger],
+        },
         InternalMetadataProvider,
         SocialRankingClient,
         EventRankingClient,
@@ -105,6 +118,31 @@ describe('worker-ranking dependency injection (Unit)', () => {
     expect(moduleRef.get(ComputeUserFeedHandler).jobType).toBe(
       'ranking.compute_user_feed',
     );
+    expect(moduleRef.get(RANKING_SCORER)).toBeInstanceOf(NoopRankingScorer);
+  });
+
+  it('resolves JevRankingScorer when jevApiKey is defined', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        {
+          provide: CustomConfig,
+          useValue: buildConfig({ jevApiKey: 'test-key' }),
+        },
+        { provide: Logger, useValue: new Logger({ context: 'Test' }) },
+        {
+          provide: RANKING_SCORER,
+          useFactory: (customConfig: CustomConfig, log: Logger) => {
+            if (!customConfig.ranking.jevApiKey) {
+              return new NoopRankingScorer();
+            }
+            return new JevRankingScorer(customConfig, log);
+          },
+          inject: [CustomConfig, Logger],
+        },
+      ],
+    }).compile();
+
+    expect(moduleRef.get(RANKING_SCORER)).toBeInstanceOf(JevRankingScorer);
   });
 
   it('uses the structural-only scorer by default', async () => {
