@@ -157,6 +157,53 @@ export class RankingConfig {
   @Transform(booleanFlag('feedGlobalEnabled'))
   @IsBoolean()
   feedGlobalEnabled!: boolean;
+
+  /** Activation explicite du scoreur semantique Jev (RANKING_JEV_ENABLED). */
+  @IsDefined()
+  @Transform(booleanFlag('jevEnabled'))
+  @IsBoolean()
+  jevEnabled!: boolean;
+
+  /** Cle API TypeSafe AI Jev (TYPESAFE_API_KEY). Optionnelle : repli structurel si absente. */
+  @IsOptional()
+  @IsString()
+  jevApiKey?: string;
+
+  /** URL du point d'entree Jev (JEV_URL / JEV_BASE_URL). */
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  jevBaseUrl!: string;
+
+  /** Timeout d'un appel Jev en ms (JEV_TIMEOUT_MS). */
+  @IsDefined()
+  @IsInt()
+  @Min(100)
+  jevTimeoutMs!: number;
+
+  /** Nom du modele Jev utilise (JEV_MODEL). */
+  @IsDefined()
+  @IsString()
+  @IsNotEmpty()
+  jevModel!: string;
+
+  /** Plafond de candidats envoyes a Jev (RANKING_JEV_CANDIDATES). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  jevCandidatesLimit!: number;
+
+  /** Nombre d'echecs consecutifs avant ouverture du coupe-circuit (JEV_CIRCUIT_BREAKER_THRESHOLD). */
+  @IsDefined()
+  @IsInt()
+  @Min(1)
+  jevCircuitBreakerThreshold!: number;
+
+  /** Duree de repos du coupe-circuit en ms avant demi-ouverture (JEV_CIRCUIT_BREAKER_COOLDOWN_MS). */
+  @IsDefined()
+  @IsInt()
+  @Min(1000)
+  jevCircuitBreakerCooldownMs!: number;
 }
 
 export class CustomConfig extends BaseConfig {
