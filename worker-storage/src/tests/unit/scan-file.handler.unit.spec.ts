@@ -1,70 +1,40 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { JobMessagingType } from '@volontariapp/messaging';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import type { PostgresFileRepository } from '@volontariapp/domain-storage';
 import {
-  EntityType,
   FileStatus,
-  PostgresFileRepository,
   RejectionReason,
   ScanStatus,
-  ValidationMode,
 } from '@volontariapp/domain-storage';
-import { StoragePipelineService } from '@volontariapp/storage-pipeline';
-import type { JobOf } from '@volontariapp/workers';
-import { ScanFileHandler } from './scan-file.handler.js';
+import type {
+  StoragePipelineService,
+  S3StorageClient,
+} from '@volontariapp/storage-pipeline';
+import type { jest } from '@jest/globals';
+import { ScanFileHandler } from '../../workers/handlers/scan-file.handler.js';
+import { buildFileModel } from '../factories/file.factory.js';
+import { buildScanFileJob } from '../factories/job.factory.js';
+import {
+  createMockFileRepository,
+  createMockS3StorageClient,
+  createMockStoragePipelineService,
+} from '../mocks/storage.mock.js';
 
 describe('ScanFileHandler (Unit)', () => {
   let fileRepository: jest.Mocked<PostgresFileRepository>;
+  let s3ClientMock: jest.Mocked<S3StorageClient>;
   let storagePipelineService: jest.Mocked<StoragePipelineService>;
-  let s3ClientMock: { deletePublicObject: jest.Mock<any> };
   let handler: ScanFileHandler;
 
   beforeEach(() => {
-    s3ClientMock = {
-      deletePublicObject: jest.fn<any>().mockResolvedValue(undefined),
-    };
-
-    fileRepository = {
-      findById: jest.fn<any>(),
-      completeScan: jest.fn<any>(),
-      rejectScan: jest.fn<any>(),
-    } as unknown as jest.Mocked<PostgresFileRepository>;
-
-    storagePipelineService = {
-      processFile: jest.fn<any>(),
-      getS3Client: jest.fn<any>().mockReturnValue(s3ClientMock),
-    } as unknown as jest.Mocked<StoragePipelineService>;
+    fileRepository = createMockFileRepository();
+    s3ClientMock = createMockS3StorageClient();
+    storagePipelineService = createMockStoragePipelineService(s3ClientMock);
 
     handler = new ScanFileHandler(fileRepository, storagePipelineService);
   });
 
-  const makeJob = (fileId: string): JobOf<typeof JobMessagingType.SCAN_FILE> =>
-    ({
-      id: 'job-123',
-      name: JobMessagingType.SCAN_FILE,
-      data: {
-        id: 'job-123',
-        type: JobMessagingType.SCAN_FILE,
-        payload: { fileId },
-      },
-    }) as unknown as JobOf<typeof JobMessagingType.SCAN_FILE>;
-
-  const makeFile = (overrides = {}) => ({
-    id: 'file-123',
-    ownerId: 'owner-123',
-    entityType: EntityType.POST_MEDIA,
-    entityId: null,
-    declaredMimeType: 'image/jpeg',
-    declaredSize: 1024,
-    status: FileStatus.PENDING,
-    scanStatus: ScanStatus.SCANNING,
-    validationMode: ValidationMode.ASYNC,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  });
-
   it('should skip job if file is not found in database', async () => {
-    const job = makeJob('missing-file');
+    const job = buildScanFileJob('missing-file');
     fileRepository.findById.mockResolvedValue(null);
 
     const result = await handler.handle(job);
@@ -75,9 +45,9 @@ describe('ScanFileHandler (Unit)', () => {
   });
 
   it('should skip job if file is not in SCANNING status', async () => {
-    const job = makeJob('file-123');
+    const job = buildScanFileJob('file-123');
     fileRepository.findById.mockResolvedValue(
-      makeFile({ scanStatus: ScanStatus.CLEAN }) as any,
+      buildFileModel({ id: 'file-123', scanStatus: ScanStatus.CLEAN }),
     );
 
     const result = await handler.handle(job);
@@ -87,9 +57,9 @@ describe('ScanFileHandler (Unit)', () => {
   });
 
   it('should skip job if file is ORPHANED or DELETED', async () => {
-    const job = makeJob('file-123');
+    const job = buildScanFileJob('file-123');
     fileRepository.findById.mockResolvedValue(
-      makeFile({ status: FileStatus.ORPHANED }) as any,
+      buildFileModel({ id: 'file-123', status: FileStatus.ORPHANED }),
     );
 
     const result = await handler.handle(job);
@@ -99,15 +69,17 @@ describe('ScanFileHandler (Unit)', () => {
   });
 
   it('should call rejectScan when storage pipeline rejects the file', async () => {
-    const job = makeJob('file-123');
-    const file = makeFile();
-    fileRepository.findById.mockResolvedValue(file as any);
+    const job = buildScanFileJob('file-123');
+    const file = buildFileModel({ id: 'file-123' });
+    fileRepository.findById.mockResolvedValue(file);
     storagePipelineService.processFile.mockResolvedValue({
       status: 'REJECTED',
       rejectionReason: RejectionReason.MALWARE,
       details: { virusName: 'Eicar-Signature' },
-    } as any);
-    fileRepository.rejectScan.mockResolvedValue({} as any);
+    });
+    fileRepository.rejectScan.mockResolvedValue(
+      buildFileModel({ id: 'file-123', scanStatus: ScanStatus.REJECTED }),
+    );
 
     const result = await handler.handle(job);
 
@@ -126,9 +98,9 @@ describe('ScanFileHandler (Unit)', () => {
   });
 
   it('should call completeScan when storage pipeline succeeds with CLEAN status', async () => {
-    const job = makeJob('file-123');
-    const file = makeFile();
-    fileRepository.findById.mockResolvedValue(file as any);
+    const job = buildScanFileJob('file-123');
+    const file = buildFileModel({ id: 'file-123' });
+    fileRepository.findById.mockResolvedValue(file);
     storagePipelineService.processFile.mockResolvedValue({
       status: 'CLEAN',
       publicKey: 'post/file-123.webp',
@@ -137,11 +109,17 @@ describe('ScanFileHandler (Unit)', () => {
       originalSize: 1024,
       format: 'webp',
       mimeType: 'image/webp',
-    } as any);
-    fileRepository.completeScan.mockResolvedValue({
-      id: file.id,
-      status: FileStatus.PENDING,
-    } as any);
+      width: 800,
+      height: 600,
+    });
+    fileRepository.completeScan.mockResolvedValue(
+      buildFileModel({
+        id: file.id,
+        status: FileStatus.PENDING,
+        scanStatus: ScanStatus.CLEAN,
+        publicKey: 'post/file-123.webp',
+      }),
+    );
 
     const result = await handler.handle(job);
 
@@ -155,15 +133,22 @@ describe('ScanFileHandler (Unit)', () => {
   });
 
   it('should clean up public S3 object if completeScan returns null (file released concurrently)', async () => {
-    const job = makeJob('file-123');
-    const file = makeFile();
-    fileRepository.findById.mockResolvedValue(file as any);
+    const job = buildScanFileJob('file-123');
+    const file = buildFileModel({ id: 'file-123' });
+    fileRepository.findById.mockResolvedValue(file);
     storagePipelineService.processFile.mockResolvedValue({
       status: 'CLEAN',
       publicKey: 'post/file-123.webp',
       publicUrl: 'http://localhost:9000/volontariapp-public/post/file-123.webp',
-    } as any);
+      actualSize: 800,
+      originalSize: 1024,
+      format: 'webp',
+      mimeType: 'image/webp',
+      width: 800,
+      height: 600,
+    });
     fileRepository.completeScan.mockResolvedValue(null);
+    s3ClientMock.deletePublicObject.mockResolvedValue(undefined);
 
     const result = await handler.handle(job);
 
@@ -177,4 +162,3 @@ describe('ScanFileHandler (Unit)', () => {
     expect(result).toEqual({ originalPayload: job.data.payload });
   });
 });
-
