@@ -158,6 +158,12 @@ export class RankingConfig {
   @IsBoolean()
   feedGlobalEnabled!: boolean;
 
+  /** Activation explicite du scoreur semantique Jev (RANKING_JEV_ENABLED). */
+  @IsDefined()
+  @Transform(booleanFlag('jevEnabled'))
+  @IsBoolean()
+  jevEnabled!: boolean;
+
   /** Cle API TypeSafe AI Jev (TYPESAFE_API_KEY). Optionnelle : repli structurel si absente. */
   @IsOptional()
   @IsString()

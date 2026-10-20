@@ -57,6 +57,13 @@ export class JevRankingScorer implements RankingScorer {
     taste: TasteSummary,
     candidates: readonly RankingCandidate[],
   ): Promise<ReadonlyMap<string, number>> {
+    if (!this.config.ranking.jevEnabled) {
+      this.logger.info(
+        'Jev scorer is disabled by configuration (RANKING_JEV_ENABLED=false)',
+      );
+      return new Map();
+    }
+
     const apiKey = this.config.ranking.jevApiKey;
     if (!apiKey) {
       this.logger.info(

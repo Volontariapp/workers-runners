@@ -34,6 +34,14 @@ describe('JevRankingScorer (Unit)', () => {
     jest.clearAllMocks();
   });
 
+  it('returns empty map if jevEnabled is false', async () => {
+    const config = buildConfig({ jevEnabled: false, jevApiKey: 'valid-key' });
+    const scorer = new JevRankingScorer(config, logger);
+
+    const scores = await scorer.score(sampleTaste, [mockCandidateA]);
+    expect(scores.size).toBe(0);
+  });
+
   it('returns empty map if jevApiKey is not configured (Noop mode)', async () => {
     const config = buildConfig({ jevApiKey: undefined });
     const scorer = new JevRankingScorer(config, logger);

@@ -92,6 +92,12 @@ import {
     {
       provide: RANKING_SCORER,
       useFactory: (customConfig: CustomConfig, log: Logger) => {
+        if (!customConfig.ranking.jevEnabled) {
+          log.info(
+            'Jev semantic scorer disabled by configuration (RANKING_JEV_ENABLED=false), using NoopRankingScorer',
+          );
+          return new NoopRankingScorer();
+        }
         if (!customConfig.ranking.jevApiKey) {
           log.info(
             'TYPESAFE_API_KEY is not defined, using NoopRankingScorer (STRUCTURAL_ONLY)',

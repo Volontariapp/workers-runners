@@ -48,6 +48,7 @@
     "feedMinItems": 20,
     "feedLikesLimit": 200,
     "feedGlobalEnabled": true,
+    "jevEnabled": true,
     "jevBaseUrl": "https://api.typesafe.ai/v1/systemone",
     "jevTimeoutMs": 10000,
     "jevModel": "jev-latest",

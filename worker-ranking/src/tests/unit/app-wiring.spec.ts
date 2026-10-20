@@ -79,7 +79,10 @@ describe('worker-ranking dependency injection (Unit)', () => {
         {
           provide: RANKING_SCORER,
           useFactory: (customConfig: CustomConfig, log: Logger) => {
-            if (!customConfig.ranking.jevApiKey) {
+            if (
+              !customConfig.ranking.jevEnabled ||
+              !customConfig.ranking.jevApiKey
+            ) {
               return new NoopRankingScorer();
             }
             return new JevRankingScorer(customConfig, log);
@@ -143,6 +146,33 @@ describe('worker-ranking dependency injection (Unit)', () => {
     }).compile();
 
     expect(moduleRef.get(RANKING_SCORER)).toBeInstanceOf(JevRankingScorer);
+  });
+
+  it('resolves NoopRankingScorer when jevEnabled is false even with jevApiKey', async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        {
+          provide: CustomConfig,
+          useValue: buildConfig({ jevEnabled: false, jevApiKey: 'test-key' }),
+        },
+        { provide: Logger, useValue: new Logger({ context: 'Test' }) },
+        {
+          provide: RANKING_SCORER,
+          useFactory: (customConfig: CustomConfig, log: Logger) => {
+            if (
+              !customConfig.ranking.jevEnabled ||
+              !customConfig.ranking.jevApiKey
+            ) {
+              return new NoopRankingScorer();
+            }
+            return new JevRankingScorer(customConfig, log);
+          },
+          inject: [CustomConfig, Logger],
+        },
+      ],
+    }).compile();
+
+    expect(moduleRef.get(RANKING_SCORER)).toBeInstanceOf(NoopRankingScorer);
   });
 
   it('uses the structural-only scorer by default', async () => {

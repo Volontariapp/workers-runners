@@ -42,6 +42,7 @@
     "feedMinItems": "RANKING_FEED_MIN_ITEMS",
     "feedLikesLimit": "RANKING_FEED_LIKES_LIMIT",
     "feedGlobalEnabled": "RANKING_FEED_GLOBAL_ENABLED",
+    "jevEnabled": "RANKING_JEV_ENABLED",
     "jevApiKey": "TYPESAFE_API_KEY",
     "jevBaseUrl": "JEV_URL",
     "jevTimeoutMs": "JEV_TIMEOUT_MS",
