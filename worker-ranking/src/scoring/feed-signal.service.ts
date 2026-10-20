@@ -45,17 +45,28 @@ export class FeedSignalService {
     });
     const likes = await this.likeLogService.listActive(userId, feedLikesLimit);
 
+    const commentsByPost = new Map<string, Date>();
+    for (const comment of comments) {
+      const existing = commentsByPost.get(comment.postId);
+      if (!existing || comment.createdAt > existing) {
+        commentsByPost.set(comment.postId, comment.createdAt);
+      }
+    }
+    const deduplicatedComments = Array.from(commentsByPost.entries()).map(
+      ([postId, at]) => ({
+        postId,
+        at,
+        kind: 'COMMENT' as const,
+      }),
+    );
+
     const engaged = [
       ...likes.map((like) => ({
         postId: like.postId,
         at: like.occurredAt,
         kind: 'LIKE' as const,
       })),
-      ...comments.map((comment) => ({
-        postId: comment.postId,
-        at: comment.createdAt,
-        kind: 'COMMENT' as const,
-      })),
+      ...deduplicatedComments,
     ];
     const authorOf = new Map(
       (await this.posts.byIds(engaged.map(({ postId }) => postId))).map(

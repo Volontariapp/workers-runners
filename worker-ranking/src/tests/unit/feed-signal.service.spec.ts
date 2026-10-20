@@ -96,4 +96,17 @@ describe('FeedSignalService (Unit)', () => {
       'own',
     ]);
   });
+
+  it('deduplicates multiple comments on the same post into a single comment signal with the most recent date', async () => {
+    jest.spyOn(posts, 'commentsByAuthor').mockResolvedValue([
+      { postId: 'commented', createdAt: new Date(NOW.getTime() - 5 * DAY_MS) },
+      { postId: 'commented', createdAt: new Date(NOW.getTime() - 1 * DAY_MS) },
+    ]);
+
+    const result = await service.collect(USER_ID, NOW);
+
+    expect(result.signalsByAuthor.get(AUTHOR_B)).toEqual([
+      { kind: 'COMMENT', ageDays: 1 },
+    ]);
+  });
 });
