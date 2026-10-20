@@ -11,7 +11,8 @@
     "start:dev": "NODE_ENV=development tsx src/index.ts",
     "start:test": "NODE_ENV=test tsx src/index.ts",
     "start:prod": "node dist/index.js",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.unit.json",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./jest.unit.json",
     "lint": "eslint \"src/**/*.ts\" --fix"
   },
   "dependencies": {
@@ -22,10 +23,13 @@
     "@volontariapp/bridge": "1.0.10",
     "@volontariapp/config": "3.3.2",
     "@volontariapp/database": "3.10.10",
+    "@volontariapp/domain-storage": "^0.11.12",
     "@volontariapp/eslint-config": "2.2.5",
     "@volontariapp/health-check": "1.0.10",
     "@volontariapp/logger": "0.4.0",
+    "@volontariapp/messaging": "2.27.0",
     "@volontariapp/monitoring": "2.2.2",
+    "@volontariapp/storage-pipeline": "^0.3.1",
     "@volontariapp/testing": "1.0.3",
     "@volontariapp/workers": "1.4.12",
     "bullmq": "^5.76.5",
@@ -37,6 +41,7 @@
     "typeorm": "^0.3.29"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@volontariapp/bridge": "1.0.10",
     "@volontariapp/config": "3.3.2",
@@ -51,7 +56,9 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",
     "globals": "^16.0.0",
+    "jest": "^30.4.2",
     "prettier": "^3.4.2",
+    "ts-jest": "^29.4.11",
     "tsx": "^4.21.0",
     "typescript": "5.7.3",
     "typescript-eslint": "^8.20.0"

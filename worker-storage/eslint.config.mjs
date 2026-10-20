@@ -11,7 +11,15 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        projectService: {
+          allowDefaultProject: [
+            '*.ts',
+            '*.js',
+            'eslint.config.mjs',
+            'src/tests/unit/*.spec.ts',
+          ],
+          defaultProject: 'tsconfig.eslint.json',
+        },
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -22,6 +30,12 @@ export default tseslint.config(
     },
     rules: {
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
+  },
+  {
+    files: ['src/tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/unbound-method': 'off',
     },
   },
   prettierConfig,

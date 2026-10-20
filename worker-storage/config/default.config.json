@@ -18,5 +18,20 @@
     "password": "password",
     "dbIndex": 0
   },
+  "s3": {
+    "endpoint": "http://localhost:9000",
+    "publicEndpoint": "http://localhost:9000",
+    "region": "us-east-1",
+    "accessKey": "minioadmin",
+    "secretKey": "minioadminpassword",
+    "publicBucket": "volontariapp-public",
+    "privateBucket": "volontariapp-private",
+    "publicBaseUrl": "http://localhost:9000/volontariapp-public"
+  },
+  "scanner": {
+    "host": "localhost",
+    "port": 3310,
+    "timeoutMs": 30000
+  },
   "port": 4106
 }
