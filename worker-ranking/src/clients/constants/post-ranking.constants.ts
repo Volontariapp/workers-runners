@@ -11,7 +11,9 @@ export const PER_AUTHOR_LIMIT = 5;
 /** Plafond d'un appel ListCommentsByAuthor (cote ms-post). */
 export const COMMENTS_LIMIT = 200;
 /** Statuts de media affichables : sans media ou medias prets (PENDING et REJECTED exclus). */
-export const VISIBLE_MEDIA: ReadonlySet<PostMediaStatus> = new Set([
+export const VISIBLE_MEDIA: ReadonlySet<PostMediaStatus | string> = new Set([
   PostMediaStatus.POST_MEDIA_STATUS_NONE,
   PostMediaStatus.POST_MEDIA_STATUS_READY,
+  'POST_MEDIA_STATUS_NONE',
+  'POST_MEDIA_STATUS_READY',
 ]);

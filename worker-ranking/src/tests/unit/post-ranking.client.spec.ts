@@ -75,11 +75,22 @@ describe('PostRankingClient (Unit)', () => {
           buildGrpcPost('ready', {
             mediaStatus: PostMediaStatus.POST_MEDIA_STATUS_READY,
           }),
+          buildGrpcPost('string-none', {
+            mediaStatus: 'POST_MEDIA_STATUS_NONE' as unknown as PostMediaStatus,
+          }),
+          buildGrpcPost('string-ready', {
+            mediaStatus:
+              'POST_MEDIA_STATUS_READY' as unknown as PostMediaStatus,
+          }),
           buildGrpcPost('pending', {
             mediaStatus: PostMediaStatus.POST_MEDIA_STATUS_PENDING,
           }),
           buildGrpcPost('rejected', {
             mediaStatus: PostMediaStatus.POST_MEDIA_STATUS_REJECTED,
+          }),
+          buildGrpcPost('string-rejected', {
+            mediaStatus:
+              'POST_MEDIA_STATUS_REJECTED' as unknown as PostMediaStatus,
           }),
           buildGrpcPost('undated', { createdAt: undefined }),
         ],
@@ -91,8 +102,11 @@ describe('PostRankingClient (Unit)', () => {
     expect(result.map((post) => [post.id, post.mediaVisible])).toEqual([
       ['none', true],
       ['ready', true],
+      ['string-none', true],
+      ['string-ready', true],
       ['pending', false],
       ['rejected', false],
+      ['string-rejected', false],
     ]);
     expect(result[0]?.createdAt).toEqual(NOW);
   });
