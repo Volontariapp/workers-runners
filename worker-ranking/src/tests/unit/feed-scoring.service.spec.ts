@@ -14,7 +14,7 @@ const HOUR_MS = 60 * 60 * 1000;
 describe('FeedScoringService (Unit)', () => {
   const scoring = new FeedScoringService(buildConfig());
 
-  it('demotes an already liked post by 0.6 against the same post untouched', () => {
+  it('demotes an already liked post to 0 against the same post untouched', () => {
     const post = buildRankingPost('p1');
     const fresh = scoring.rank(
       { personal: [buildFeedCandidate(post)], global: [] },
@@ -29,7 +29,8 @@ describe('FeedScoringService (Unit)', () => {
     );
 
     const freshScore = fresh.items[0]?.score ?? 0;
-    expect(liked.items[0]?.score).toBeCloseTo(freshScore * 0.6, 3);
+    expect(freshScore).toBeGreaterThan(0);
+    expect(liked.items[0]?.score).toBe(0);
   });
 
   it('ranks a post linked to a future wished event above a plain followed post', () => {

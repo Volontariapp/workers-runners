@@ -15,7 +15,7 @@ import type { ScoredPost } from './interfaces/scored-post.interface.js';
 
 /**
  * Score structurel des posts (docs/matching/13, section 2) : lien evenement 0,35, auteur 0,30,
- * fraicheur 0,35, retrogradation 0,6 d'un post deja like ou commente, diversite par auteur, posts
+ * fraicheur 0,35, retrogradation a 0 d'un post deja like ou commente, diversite par auteur, posts
  * personnels avant le complement GLOBAL. Jev est desactive pour le feed (aucun score semantique).
  */
 @Injectable()
