@@ -9,6 +9,7 @@ export const FallbackCreateEventFactory = {
     return {
       userId: randomUUID(),
       eventId: randomUUID(),
+      ...overrides,
       payload: {
         title: 'Test Factory Event',
         description: 'Description from factory',
@@ -20,8 +21,8 @@ export const FallbackCreateEventFactory = {
         maxParticipants: 10,
         tagIds: [],
         idempotencyKey: randomUUID(),
+        ...overrides?.payload,
       },
-      ...overrides,
     };
   },
 };

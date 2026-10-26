@@ -65,6 +65,8 @@ export class FallbackCreateEventHandler implements IJobHandler<
     });
 
     await this.eventService.create({
+      id: command.eventId,
+      coverFileId: command.payload.coverFileId,
       name: command.payload.title,
       description: command.payload.description,
       startAt,
