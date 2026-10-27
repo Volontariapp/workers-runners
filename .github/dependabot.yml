@@ -1,0 +1,67 @@
+# Dependabot PRs carry docker-and-e2e (required by the CI). Source: Volontariapp/ci-tools templates/dependabot.
+# Keep `directories` in sync with the `services` input of .github/workflows/ci.yml.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/worker-event"
+      - "/worker-post"
+      - "/worker-ranking"
+      - "/worker-social"
+      - "/worker-storage"
+      - "/worker-user"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "docker-and-e2e"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    groups:
+      # One pull request for every version update across all sub-packages (@volontariapp/* included).
+      runner-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 1
+    labels:
+      - "dependencies"
+      - "docker-and-e2e"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/worker-event"
+      - "/worker-post"
+      - "/worker-ranking"
+      - "/worker-social"
+      - "/worker-storage"
+      - "/worker-user"
+    open-pull-requests-limit: 1
+    labels:
+      - "dependencies"
+      - "docker-and-e2e"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
