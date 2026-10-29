@@ -3302,17 +3302,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@smithy/core@npm:^3.33.2, @smithy/core@npm:^3.33.3, @smithy/core@npm:^3.35.0":
-  version: 3.36.0
-  resolution: "@smithy/core@npm:3.36.0"
-  dependencies:
-    "@smithy/types": "npm:^4.19.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/35abd554f06d2f2fd1c4b9d73765b08bb8d82bdc4ccf9c83ac244df774b0de131ca0cf0250e0fae43d481f83a0d221c04c154cce8f142664aea53145b2676b3c
-  languageName: node
-  linkType: hard
-
-"@smithy/core@npm:^3.37.0":
+"@smithy/core@npm:^3.33.2, @smithy/core@npm:^3.33.3, @smithy/core@npm:^3.35.0, @smithy/core@npm:^3.37.0":
   version: 3.37.0
   resolution: "@smithy/core@npm:3.37.0"
   dependencies:
