@@ -86,6 +86,7 @@ export class RankingJobWriter {
       emitterId: job.emitterId,
       target: job.target,
       scheduledAt: job.scheduledAt,
+      traceparent: job.traceparent,
       payload: { userId, reason, requestedAt },
     });
   }
