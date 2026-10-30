@@ -45,7 +45,7 @@
     "feedMaxAgeDays": 60,
     "feedEventPostMaxAgeDays": 30,
     "feedMaxFanout": 200,
-    "feedMinItems": 20,
+    "feedMinItems": 100,
     "feedLikesLimit": 200,
     "feedGlobalEnabled": true,
     "jevEnabled": true,
