@@ -211,7 +211,7 @@ describe('FeedCandidateService (Unit)', () => {
     expect(globalSpy).not.toHaveBeenCalled();
   });
 
-  it('puts the engaged authors first and marks engaged posts, follows and friends', async () => {
+  it('puts the engaged authors first, never proposes a post already liked or commented, and marks follows and friends', async () => {
     jest.spyOn(signals, 'collect').mockResolvedValue({
       signalsByAuthor: new Map([[AUTHOR_C, [{ kind: 'COMMENT', ageDays: 1 }]]]),
       engagedPostIds: new Set(['p-c']),
@@ -221,6 +221,7 @@ describe('FeedCandidateService (Unit)', () => {
     recentSpy.mockResolvedValue([
       buildRankingPost('p-a'),
       buildRankingPost('p-c', { authorId: AUTHOR_C }),
+      buildRankingPost('p-c2', { authorId: AUTHOR_C }),
     ]);
 
     const result = await build().collect(USER_ID, NOW);
@@ -230,9 +231,10 @@ describe('FeedCandidateService (Unit)', () => {
     const byId = new Map(
       result.personal.map((entry) => [entry.post.id, entry]),
     );
-    expect(byId.get('p-c')).toMatchObject({
+    expect(byId.has('p-c')).toBe(false);
+    expect(byId.get('p-c2')).toMatchObject({
       origin: 'ENGAGED',
-      alreadyEngaged: true,
+      alreadyEngaged: false,
       followed: false,
     });
     expect(byId.get('p-a')).toMatchObject({
@@ -240,6 +242,21 @@ describe('FeedCandidateService (Unit)', () => {
       followed: true,
       friend: true,
     });
+  });
+
+  it('never proposes a post already liked or commented in the GLOBAL complement either', async () => {
+    jest.spyOn(signals, 'collect').mockResolvedValue({
+      signalsByAuthor: new Map(),
+      engagedPostIds: new Set(['g-liked']),
+    });
+    globalSpy.mockResolvedValue([
+      buildRankingPost('g-liked', { authorId: AUTHOR_B }),
+      buildRankingPost('g-new', { authorId: AUTHOR_C }),
+    ]);
+
+    const result = await build().collect(USER_ID, NOW);
+
+    expect(result.global.map((entry) => entry.post.id)).toEqual(['g-new']);
   });
 
   it('skips the GLOBAL complement when it is disabled', async () => {

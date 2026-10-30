@@ -4,7 +4,8 @@ import type { EligibilityRules } from '../interfaces/eligibility-rules.interface
 
 /**
  * Filtres du worker (docs/matching/11, section 4) : ni ses propres posts, ni ceux d'un bloque (dans
- * les deux sens), medias NONE ou READY seulement, age maximal plus long pour un post lie a un evenement.
+ * les deux sens), jamais un post deja like ou commente, medias NONE ou READY seulement, age maximal
+ * plus long pour un post lie a un evenement.
  */
 export const isEligiblePost = (
   post: RankingPost,
@@ -12,6 +13,9 @@ export const isEligiblePost = (
   rules: EligibilityRules,
 ): boolean => {
   if (post.authorId === rules.userId || rules.blockedIds.has(post.authorId)) {
+    return false;
+  }
+  if (rules.engagedPostIds.has(post.id)) {
     return false;
   }
   if (!post.mediaVisible) {
