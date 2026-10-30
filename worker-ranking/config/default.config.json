@@ -42,7 +42,7 @@
     "workerConcurrency": 5,
     "feedListSize": 100,
     "feedAuthors": 200,
-    "feedMaxAgeDays": 7,
+    "feedMaxAgeDays": 60,
     "feedEventPostMaxAgeDays": 30,
     "feedMaxFanout": 200,
     "feedMinItems": 20,
