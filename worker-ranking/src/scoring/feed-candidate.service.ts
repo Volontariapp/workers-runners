@@ -59,6 +59,7 @@ export class FeedCandidateService {
     const rules: EligibilityRules = {
       userId,
       blockedIds,
+      engagedPostIds: signals.engagedPostIds,
       now,
       maxAgeDays: feedMaxAgeDays,
       eventPostMaxAgeDays: feedEventPostMaxAgeDays,
