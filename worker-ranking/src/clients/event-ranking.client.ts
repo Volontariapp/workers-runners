@@ -35,16 +35,20 @@ export class EventRankingClient implements OnModuleInit {
   /**
    * Evenements publies et non commences, dans le rayon maximal autour de l'origine quand elle est
    * connue (le rayon se donne en metres). Sans origine, tous les evenements a venir.
+   * Les identifiants exclus sont retires par ms-event avant la coupe a `limit` : la page ne se
+   * remplit pas d'evenements deja vus.
    */
   async upcoming(
     now: Date,
     limit: number,
     origin: GeoPoint | null,
+    excludedIds: readonly string[],
   ): Promise<RankingEvent[]> {
     return this.search({
       ...emptySearchQuery(),
       statuses: [EventState.EVENT_STATE_PUBLISHED],
       startDateFrom: now.toISOString(),
+      excludedIds: [...excludedIds],
       area: origin
         ? {
             center: { latitude: origin.lat, longitude: origin.lng },

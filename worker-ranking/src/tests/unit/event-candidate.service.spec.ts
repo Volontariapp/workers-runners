@@ -95,7 +95,38 @@ describe('EventCandidateService (Unit)', () => {
   it('searches around the stored position', async () => {
     await service.collect(USER_ID, NOW);
 
-    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, PARIS);
+    expect(upcomingSpy).toHaveBeenCalledWith(
+      NOW,
+      150,
+      PARIS,
+      expect.anything(),
+    );
+  });
+
+  it('asks ms-event to leave out the participated, wished, created and passed events', async () => {
+    await service.collect(USER_ID, NOW);
+
+    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, PARIS, [
+      'p1',
+      'p2',
+      'w1',
+      'c1',
+      'passed',
+    ]);
+  });
+
+  it('sends each excluded id once', async () => {
+    jest.spyOn(social, 'wishedEventIds').mockResolvedValue(['p1', 'w1']);
+
+    await service.collect(USER_ID, NOW);
+
+    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, PARIS, [
+      'p1',
+      'p2',
+      'w1',
+      'c1',
+      'passed',
+    ]);
   });
 
   it('falls back to the centre of the history when no position is stored', async () => {
@@ -117,6 +148,6 @@ describe('EventCandidateService (Unit)', () => {
     const result = await service.collect(USER_ID, NOW);
 
     expect(result.origin).toBeNull();
-    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, null);
+    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, null, expect.anything());
   });
 });

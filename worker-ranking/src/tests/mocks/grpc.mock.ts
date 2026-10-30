@@ -3,6 +3,7 @@ import type { ClientGrpc } from '@nestjs/microservices';
 import { createMock } from '@volontariapp/testing';
 import { jest } from '@jest/globals';
 import type { InternalMetadataProvider } from '../../clients/internal-metadata.provider.js';
+import type { EventQueryClientWithMetadata } from '../../clients/interfaces/event-query-client-with-metadata.interface.js';
 import type { EventPostLinkClientWithMetadata } from '../../clients/interfaces/event-post-link-client-with-metadata.interface.js';
 import type { InteractionClientWithMetadata } from '../../clients/interfaces/interaction-client-with-metadata.interface.js';
 import type { PostClientWithMetadata } from '../../clients/interfaces/post-client-with-metadata.interface.js';
@@ -38,3 +39,6 @@ export const createMockEventPostLinkService =
     createMock<EventPostLinkClientWithMetadata>();
 export const createMockPostService = (): jest.Mocked<PostClientWithMetadata> =>
   createMock<PostClientWithMetadata>();
+export const createMockEventQueryService =
+  (): jest.Mocked<EventQueryClientWithMetadata> =>
+    createMock<EventQueryClientWithMetadata>();

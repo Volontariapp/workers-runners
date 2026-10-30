@@ -57,18 +57,18 @@ export class EventCandidateService {
         history.flatMap((event) => (event.location ? [event.location] : [])),
       );
 
-    const [upcoming, allowed, friendTouched] = await Promise.all([
-      this.events.upcoming(now, candidateLimit, origin),
-      this.social.allowedEventIds(userId),
-      this.social.friendTouchedEventIds(userId),
-    ]);
-
     const excluded = new Set([
       ...participatedIds,
       ...wishedIds,
       ...createdIds,
       ...passedIds,
     ]);
+    const [upcoming, allowed, friendTouched] = await Promise.all([
+      this.events.upcoming(now, candidateLimit, origin, [...excluded]),
+      this.social.allowedEventIds(userId),
+      this.social.friendTouchedEventIds(userId),
+    ]);
+
     const allowedSet = new Set(allowed);
     const candidates = upcoming.filter(
       (event) =>
