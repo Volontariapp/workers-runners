@@ -23,3 +23,24 @@ export const buildScanFileJob = (
   Object.defineProperty(job, Symbol.iterator, { value: undefined });
   return job;
 };
+
+export const buildCleanupFilesJob = (
+  id = 'job-cleanup',
+): JobOf<typeof JobMessagingType.CLEANUP_FILES> => {
+  const job = createMock<JobOf<typeof JobMessagingType.CLEANUP_FILES>>();
+  Object.defineProperty(job, 'id', { value: id, writable: true });
+  Object.defineProperty(job, 'name', {
+    value: JobMessagingType.CLEANUP_FILES,
+    writable: true,
+  });
+  Object.defineProperty(job, 'data', {
+    value: {
+      id,
+      type: JobMessagingType.CLEANUP_FILES,
+      payload: {},
+    },
+    writable: true,
+  });
+  Object.defineProperty(job, Symbol.iterator, { value: undefined });
+  return job;
+};

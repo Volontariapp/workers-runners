@@ -15,6 +15,7 @@ import { CustomConfig } from './config/custom-config.js';
 import { resolveConfigDirectory } from './config/resolve-config-directory.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
+import { CleanupFilesHandler } from './workers/handlers/cleanup-files.handler.js';
 import { ScanFileHandler } from './workers/handlers/scan-file.handler.js';
 import { StorageWorker } from './workers/storage.worker.js';
 
@@ -106,6 +107,7 @@ const logger = new Logger({
       inject: [CustomConfig],
     },
     ScanFileHandler,
+    CleanupFilesHandler,
     StorageWorker,
   ],
 })
