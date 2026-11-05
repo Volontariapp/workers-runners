@@ -36,11 +36,10 @@ export class EventCandidateService {
       locationKey,
     } = this.customConfig.ranking;
 
-    const [participatedIds, wishedIds, createdIds, passedIds, storedPosition] =
+    const [participatedIds, wishedIds, passedIds, storedPosition] =
       await Promise.all([
         this.social.participatedEventIds(userId, excludeLimit),
         this.social.wishedEventIds(userId, excludeLimit),
-        this.social.createdEventIds(userId, excludeLimit),
         this.feedbackService.listRecentPassedEventIds(userId, passCooldownDays),
         this.locationService.findPosition(userId, locationKey),
       ]);
@@ -57,14 +56,16 @@ export class EventCandidateService {
         history.flatMap((event) => (event.location ? [event.location] : [])),
       );
 
-    const excluded = new Set([
-      ...participatedIds,
-      ...wishedIds,
-      ...createdIds,
-      ...passedIds,
-    ]);
+    const excluded = new Set([...participatedIds, ...wishedIds, ...passedIds]);
     const [upcoming, allowed, friendTouched] = await Promise.all([
-      this.events.upcoming(now, candidateLimit, origin, [...excluded]),
+      // The user's own events are left out by ms-event (organizerId), not listed by id.
+      this.events.upcoming(
+        now,
+        candidateLimit,
+        origin,
+        [...excluded],
+        [userId],
+      ),
       this.social.allowedEventIds(userId),
       this.social.friendTouchedEventIds(userId),
     ]);

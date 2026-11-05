@@ -3,8 +3,6 @@ import type { Observable } from 'rxjs';
 import type {
   AdminGetRecommendedEventIdsQuery,
   AdminGetRecommendedEventIdsResponse,
-  AdminGetUserEventQuery,
-  AdminGetUserEventResponse,
   AdminGetUserParticipateEventQuery,
   AdminGetUserParticipateEventResponse,
   AdminGetUserWishEventQuery,
@@ -16,10 +14,6 @@ import type {
 
 /** Le client genere ne type pas les metadonnees gRPC, necessaires au jeton interne. */
 export interface ParticipationClientWithMetadata extends ParticipationQueryServiceClient {
-  adminGetUserEvent(
-    request: AdminGetUserEventQuery,
-    metadata?: Metadata,
-  ): Observable<AdminGetUserEventResponse>;
   adminGetUserParticipateEvent(
     request: AdminGetUserParticipateEventQuery,
     metadata?: Metadata,

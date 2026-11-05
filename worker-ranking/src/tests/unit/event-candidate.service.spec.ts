@@ -42,7 +42,6 @@ describe('EventCandidateService (Unit)', () => {
     );
     jest.spyOn(social, 'participatedEventIds').mockResolvedValue(['p1', 'p2']);
     jest.spyOn(social, 'wishedEventIds').mockResolvedValue(['w1']);
-    jest.spyOn(social, 'createdEventIds').mockResolvedValue(['c1']);
     jest
       .spyOn(feedbackService, 'listRecentPassedEventIds')
       .mockResolvedValue(['passed']);
@@ -67,7 +66,6 @@ describe('EventCandidateService (Unit)', () => {
     upcomingSpy.mockResolvedValue([
       keep,
       buildRankingEvent('passed'),
-      buildRankingEvent('c1'),
       buildRankingEvent('blocked'),
       buildRankingEvent('full', {
         currentParticipants: 20,
@@ -77,7 +75,7 @@ describe('EventCandidateService (Unit)', () => {
     ]);
     jest
       .spyOn(social, 'allowedEventIds')
-      .mockResolvedValue(['keep', 'passed', 'c1', 'full', 'started']);
+      .mockResolvedValue(['keep', 'passed', 'full', 'started']);
     jest.spyOn(social, 'friendTouchedEventIds').mockResolvedValue(['keep']);
 
     const result = await service.collect(USER_ID, NOW);
@@ -100,19 +98,20 @@ describe('EventCandidateService (Unit)', () => {
       150,
       PARIS,
       expect.anything(),
+      expect.anything(),
     );
   });
 
-  it('asks ms-event to leave out the participated, wished, created and passed events', async () => {
+  it('asks ms-event to leave out the participated, wished and passed events, and the user own events', async () => {
     await service.collect(USER_ID, NOW);
 
-    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, PARIS, [
-      'p1',
-      'p2',
-      'w1',
-      'c1',
-      'passed',
-    ]);
+    expect(upcomingSpy).toHaveBeenCalledWith(
+      NOW,
+      150,
+      PARIS,
+      ['p1', 'p2', 'w1', 'passed'],
+      [USER_ID],
+    );
   });
 
   it('sends each excluded id once', async () => {
@@ -120,13 +119,13 @@ describe('EventCandidateService (Unit)', () => {
 
     await service.collect(USER_ID, NOW);
 
-    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, PARIS, [
-      'p1',
-      'p2',
-      'w1',
-      'c1',
-      'passed',
-    ]);
+    expect(upcomingSpy).toHaveBeenCalledWith(
+      NOW,
+      150,
+      PARIS,
+      ['p1', 'p2', 'w1', 'passed'],
+      [USER_ID],
+    );
   });
 
   it('falls back to the centre of the history when no position is stored', async () => {
@@ -148,6 +147,12 @@ describe('EventCandidateService (Unit)', () => {
     const result = await service.collect(USER_ID, NOW);
 
     expect(result.origin).toBeNull();
-    expect(upcomingSpy).toHaveBeenCalledWith(NOW, 150, null, expect.anything());
+    expect(upcomingSpy).toHaveBeenCalledWith(
+      NOW,
+      150,
+      null,
+      expect.anything(),
+      expect.anything(),
+    );
   });
 });

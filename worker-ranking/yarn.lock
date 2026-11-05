@@ -3724,9 +3724,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volontariapp/contracts-nest@npm:^3.4.1":
-  version: 3.4.1
-  resolution: "@volontariapp/contracts-nest@npm:3.4.1"
+"@volontariapp/contracts-nest@npm:^3.4.4":
+  version: 3.4.4
+  resolution: "@volontariapp/contracts-nest@npm:3.4.4"
   dependencies:
     "@volontariapp/logger": "npm:0.4.0"
     protobufjs: "npm:^7.5.8"
@@ -3735,7 +3735,7 @@ __metadata:
     "@nestjs/core": ^11.0.0
     "@nestjs/microservices": ^11.0.0
     rxjs: ^7.0.0
-  checksum: 10c0/f0c22da6d067169f1dd6ddf59cb08c8aef6430830f534fb349e851fab1d851a3a208e484942c7a13399b73cdd4d5d6c3ebcb3334eb22ca06c14e233caf4cc2f1
+  checksum: 10c0/9b90e98bf3f516ecc90e9629d9e2458ed819396d051f37f6eaf7bbfae4f9ef22c1400538ce8847f886e1d4540130ab563720293744b0fc6540d784710681fa08
   languageName: node
   linkType: hard
 
@@ -9060,7 +9060,7 @@ __metadata:
     "@volontariapp/bridge": "npm:^1.0.10"
     "@volontariapp/bridge-nest": "npm:^0.3.21"
     "@volontariapp/config": "npm:^3.3.2"
-    "@volontariapp/contracts-nest": "npm:^3.4.1"
+    "@volontariapp/contracts-nest": "npm:^3.4.4"
     "@volontariapp/database": "npm:^3.11.0"
     "@volontariapp/domain-ranking": "npm:^0.2.2"
     "@volontariapp/eslint-config": "npm:^2.2.5"

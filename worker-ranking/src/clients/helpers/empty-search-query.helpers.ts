@@ -9,6 +9,7 @@ export const emptySearchQuery = (): SearchEventsQuery => ({
   organizerId: '',
   ids: [],
   excludedIds: [],
+  excludedOrganizerIds: [],
   statuses: [],
   pagination: undefined,
 });
