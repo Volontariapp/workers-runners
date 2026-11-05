@@ -63,19 +63,6 @@ export class SocialRankingClient implements OnModuleInit {
     );
   }
 
-  createdEventIds(userId: string, max: number): Promise<string[]> {
-    return this.paged(max, async (page, limit, metadata) =>
-      toIdsPage(
-        await firstValueFrom(
-          this.participation.adminGetUserEvent(
-            { userId, pagination: { page, limit } },
-            metadata,
-          ),
-        ),
-      ),
-    );
-  }
-
   /** Evenements autorises par le graphe : ni crees, ni participes, ni souhaites, ni d'un bloque. */
   allowedEventIds(userId: string): Promise<string[]> {
     return this.recommended(userId, {

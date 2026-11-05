@@ -43,21 +43,22 @@ describe('EventRankingClient (Unit)', () => {
     jest.clearAllMocks();
   });
 
-  it('searches the published events that have not started, without the excluded ids', async () => {
-    await client.upcoming(NOW, 150, PARIS, ['a', 'b']);
+  it('searches the published events that have not started, without the excluded ids and organizers', async () => {
+    await client.upcoming(NOW, 150, PARIS, ['a', 'b'], ['me']);
 
     expect(searchSpy).toHaveBeenCalledWith(
       expect.objectContaining({
         statuses: [EventState.EVENT_STATE_PUBLISHED],
         startDateFrom: NOW.toISOString(),
         excludedIds: ['a', 'b'],
+        excludedOrganizerIds: ['me'],
       }),
       expect.anything(),
     );
   });
 
   it('caps the page at the ms-event maximum', async () => {
-    await client.upcoming(NOW, 150, null, []);
+    await client.upcoming(NOW, 150, null, [], []);
 
     expect(searchSpy).toHaveBeenCalledWith(
       expect.objectContaining({

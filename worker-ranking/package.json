@@ -26,7 +26,7 @@
     "@volontariapp/bridge": "^1.0.10",
     "@volontariapp/bridge-nest": "^0.3.21",
     "@volontariapp/config": "^3.3.2",
-    "@volontariapp/contracts-nest": "^3.4.1",
+    "@volontariapp/contracts-nest": "^3.4.4",
     "@volontariapp/database": "^3.11.0",
     "@volontariapp/domain-ranking": "^0.2.2",
     "@volontariapp/eslint-config": "^2.2.5",
