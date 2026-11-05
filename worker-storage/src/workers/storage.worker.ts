@@ -7,6 +7,7 @@ import {
   JobRegistry,
   StorageQueue,
 } from '@volontariapp/messaging';
+import { CleanupFilesHandler } from './handlers/cleanup-files.handler.js';
 import { ScanFileHandler } from './handlers/scan-file.handler.js';
 import type { IJobHandler } from './handlers/interfaces/job-handler.interface.js';
 
@@ -18,9 +19,10 @@ export class StorageWorker extends BaseWorker<JobMessagingType> {
   constructor(
     @Inject(JobAuditRepository) auditRepo: JobAuditRepository,
     @Inject(ScanFileHandler) scanFileHandler: ScanFileHandler,
+    @Inject(CleanupFilesHandler) cleanupFilesHandler: CleanupFilesHandler,
   ) {
     super(auditRepo);
-    const handlers: IJobHandler[] = [scanFileHandler];
+    const handlers: IJobHandler[] = [scanFileHandler, cleanupFilesHandler];
     this.handlerMap = new Map(handlers.map((h) => [h.jobType, h]));
   }
 

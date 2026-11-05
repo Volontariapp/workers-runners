@@ -5,22 +5,30 @@ import type { jest } from '@jest/globals';
 import { createMock } from '@volontariapp/testing';
 import { StorageWorker } from '../../workers/storage.worker.js';
 import type { ScanFileHandler } from '../../workers/handlers/scan-file.handler.js';
-import { buildScanFileJob } from '../factories/job.factory.js';
+import type { CleanupFilesHandler } from '../../workers/handlers/cleanup-files.handler.js';
+import {
+  buildCleanupFilesJob,
+  buildScanFileJob,
+} from '../factories/job.factory.js';
 import {
   createMockJobAuditRepository,
+  createMockCleanupFilesHandler,
   createMockScanFileHandler,
 } from '../mocks/storage.mock.js';
 
 describe('StorageWorker (Unit)', () => {
   let auditRepo: jest.Mocked<JobAuditRepository>;
   let scanFileHandler: jest.Mocked<ScanFileHandler>;
+  let cleanupFilesHandler: jest.Mocked<CleanupFilesHandler>;
   let worker: StorageWorker;
 
   beforeEach(() => {
     auditRepo = createMockJobAuditRepository();
     scanFileHandler = createMockScanFileHandler();
 
-    worker = new StorageWorker(auditRepo, scanFileHandler);
+    cleanupFilesHandler = createMockCleanupFilesHandler();
+
+    worker = new StorageWorker(auditRepo, scanFileHandler, cleanupFilesHandler);
   });
 
   it('should route storage.scan_file to ScanFileHandler', async () => {
@@ -36,6 +44,17 @@ describe('StorageWorker (Unit)', () => {
     // Assert
     expect(scanFileHandler.handle).toHaveBeenCalledWith(job);
     expect(result).toEqual({ originalPayload: payload });
+  });
+
+  it('should route storage.cleanup_files to CleanupFilesHandler', async () => {
+    const job = buildCleanupFilesJob();
+    cleanupFilesHandler.handle.mockResolvedValue({ originalPayload: {} });
+
+    const result = await worker['processJob'](job);
+
+    expect(cleanupFilesHandler.handle).toHaveBeenCalledWith(job);
+    expect(scanFileHandler.handle).not.toHaveBeenCalled();
+    expect(result).toEqual({ originalPayload: {} });
   });
 
   it('should throw an error for unhandled job type', async () => {

@@ -1,4 +1,5 @@
 import {
+  type FilePurgeCandidate,
   EntityType,
   FileModel,
   FileStatus,
@@ -35,3 +36,12 @@ export const buildFileModel = (
 
   return Object.assign(file, overrides);
 };
+
+export const buildPurgeCandidate = (
+  id: string,
+  publicKey: string | null = null,
+): FilePurgeCandidate => ({
+  id,
+  quarantineKey: `quarantine/${id}`,
+  publicKey,
+});

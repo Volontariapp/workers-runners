@@ -7,6 +7,7 @@ import type {
   S3StorageClient,
 } from '@volontariapp/storage-pipeline';
 import type { JobAuditRepository } from '@volontariapp/workers';
+import type { CleanupFilesHandler } from '../../workers/handlers/cleanup-files.handler.js';
 import type { ScanFileHandler } from '../../workers/handlers/scan-file.handler.js';
 
 export const createMockFileRepository =
@@ -41,3 +42,13 @@ export const createMockScanFileHandler = (): jest.Mocked<ScanFileHandler> => {
   });
   return mock;
 };
+
+export const createMockCleanupFilesHandler =
+  (): jest.Mocked<CleanupFilesHandler> => {
+    const mock = createMock<CleanupFilesHandler>();
+    Object.defineProperty(mock, 'jobType', {
+      value: JobMessagingType.CLEANUP_FILES,
+      writable: true,
+    });
+    return mock;
+  };
