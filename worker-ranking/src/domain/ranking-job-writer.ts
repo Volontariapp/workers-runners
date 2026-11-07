@@ -11,6 +11,7 @@ import {
   COMPUTE_JOB_TYPE,
   JOB_EMITTER,
 } from './constants/ranking-job.constants.js';
+import { orderForLocking } from './helpers/lock-order.helpers.js';
 import type { ComputeRequest } from './interfaces/compute-request.interface.js';
 import type { FollowUpJob } from './interfaces/follow-up-job.interface.js';
 
@@ -32,11 +33,14 @@ export class RankingJobWriter {
     return this.postgres.getDriver();
   }
 
-  /** Une demande de fond par utilisateur, dans une seule transaction. */
+  /**
+   * Une demande de fond par utilisateur, dans une seule transaction. Les lignes sont verrouillees
+   * dans un ordre stable pour ne pas se croiser avec un autre lot (deadlock).
+   */
   async requestCompute(requests: readonly ComputeRequest[]): Promise<void> {
     const { requestTtlSeconds } = this.customConfig.ranking;
     await this.dataSource.transaction(async (manager) => {
-      for (const { userId, listKind, reason } of requests) {
+      for (const { userId, listKind, reason } of orderForLocking(requests)) {
         const { requestedAt, needsJob } =
           await this.requestService.requestCompute(
             {
