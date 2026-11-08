@@ -122,6 +122,51 @@ describe('SocialFeedClient (Unit)', () => {
     expect(blockedMeSpy.mock.calls[0]?.[0].userId).toBe(USER_ID);
   });
 
+  describe('hasBlocks', () => {
+    it('is false when nobody is blocked in either direction, with a one-id read each way', async () => {
+      const blocksSpy = jest
+        .spyOn(relationship, 'adminGetMyBlocks')
+        .mockReturnValue(of(buildIdsResponse([], 0)));
+      const blockedMeSpy = jest
+        .spyOn(relationship, 'adminGetWhoBlockedMe')
+        .mockReturnValue(of(buildIdsResponse([], 0)));
+
+      const result = await client.hasBlocks(USER_ID);
+
+      expect(result).toBe(false);
+      expect(blocksSpy.mock.calls[0]?.[0]).toEqual({
+        userId: USER_ID,
+        pagination: { page: 1, limit: 1 },
+      });
+      expect(blockedMeSpy.mock.calls[0]?.[0]).toEqual({
+        userId: USER_ID,
+        pagination: { page: 1, limit: 1 },
+      });
+    });
+
+    it('is true when the user blocked someone', async () => {
+      jest
+        .spyOn(relationship, 'adminGetMyBlocks')
+        .mockReturnValue(of(buildIdsResponse([AUTHOR_A], 1)));
+      jest
+        .spyOn(relationship, 'adminGetWhoBlockedMe')
+        .mockReturnValue(of(buildIdsResponse([], 0)));
+
+      expect(await client.hasBlocks(USER_ID)).toBe(true);
+    });
+
+    it('is true when someone blocked the user', async () => {
+      jest
+        .spyOn(relationship, 'adminGetMyBlocks')
+        .mockReturnValue(of(buildIdsResponse([], 0)));
+      jest
+        .spyOn(relationship, 'adminGetWhoBlockedMe')
+        .mockReturnValue(of(buildIdsResponse([AUTHOR_B], 1)));
+
+      expect(await client.hasBlocks(USER_ID)).toBe(true);
+    });
+  });
+
   it('asks whether each followed author follows the user back (author to user)', async () => {
     const isFollowingSpy = jest
       .spyOn(relationship, 'adminGetIsFollowing')

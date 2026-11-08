@@ -112,6 +112,29 @@ export class SocialFeedClient implements OnModuleInit {
     return new Set([...blocked, ...blockedMe]);
   }
 
+  /**
+   * L'utilisateur a-t-il bloque quelqu'un, ou a-t-il ete bloque ? Deux lectures d'un seul identifiant,
+   * ancrees sur l'utilisateur : bon marche, contrairement a un parcours de tous les evenements.
+   */
+  async hasBlocks(userId: string): Promise<boolean> {
+    const pagination = { page: 1, limit: 1 };
+    const metadata = await this.internalMetadata.get();
+    const [blocked, blockedMe] = await Promise.all([
+      firstValueFrom(
+        this.relationship.adminGetMyBlocks({ userId, pagination }, metadata),
+      ),
+      firstValueFrom(
+        this.relationship.adminGetWhoBlockedMe(
+          { userId, pagination },
+          metadata,
+        ),
+      ),
+    ]);
+    return (
+      toIdsPage(blocked).ids.length > 0 || toIdsPage(blockedMe).ids.length > 0
+    );
+  }
+
   /** Parmi les auteurs suivis, ceux qui suivent aussi l'utilisateur (amis : suivi dans les deux sens). */
   async friendIds(
     userId: string,

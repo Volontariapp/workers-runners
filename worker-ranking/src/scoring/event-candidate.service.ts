@@ -6,6 +6,7 @@ import {
 } from '@volontariapp/domain-ranking';
 import { Logger } from '@volontariapp/logger';
 import { EventRankingClient } from '../clients/event-ranking.client.js';
+import { SocialFeedClient } from '../clients/social-feed.client.js';
 import { SocialRankingClient } from '../clients/social-ranking.client.js';
 import { CustomConfig } from '../config/custom-config.js';
 import { isFullEvent } from './helpers/is-full-event.helpers.js';
@@ -21,6 +22,7 @@ export class EventCandidateService {
 
   constructor(
     private readonly social: SocialRankingClient,
+    private readonly socialFeed: SocialFeedClient,
     private readonly events: EventRankingClient,
     private readonly feedbackService: RankingFeedbackService,
     private readonly locationService: RankingLocationService,
@@ -66,15 +68,15 @@ export class EventCandidateService {
         [...excluded],
         [userId],
       ),
-      this.social.allowedEventIds(userId),
+      this.graphAllowList(userId, [participatedIds.length, wishedIds.length]),
       this.social.friendTouchedEventIds(userId),
     ]);
 
-    const allowedSet = new Set(allowed);
+    const allowedSet = allowed === null ? null : new Set(allowed);
     const candidates = upcoming.filter(
       (event) =>
         !excluded.has(event.id) &&
-        allowedSet.has(event.id) &&
+        (allowedSet === null || allowedSet.has(event.id)) &&
         !isFullEvent(event) &&
         event.startAt.getTime() > now.getTime(),
     );
@@ -88,5 +90,39 @@ export class EventCandidateService {
       friendTouched: new Set(friendTouched),
       origin,
     };
+  }
+
+  /**
+   * Evenements autorises par le graphe, ou null quand ce filtre n'apporte rien. Les exclusions
+   * (crees, participes, souhaites) sont deja appliquees par ms-event ; seuls les blocages restent
+   * propres au graphe. Sans blocage, on evite un parcours complet des evenements par utilisateur.
+   * Une liste d'exclusion qui atteint `excludeLimit` est peut-etre tronquee : le graphe reste alors
+   * le filet des exclusions au-dela de la limite.
+   */
+  private async graphAllowList(
+    userId: string,
+    exclusionListSizes: readonly number[],
+  ): Promise<string[] | null> {
+    const { excludeLimit } = this.customConfig.ranking;
+    const mayBeTruncated = exclusionListSizes.some(
+      (size) => size >= excludeLimit,
+    );
+    if (!mayBeTruncated && !(await this.hasBlocksOrAssume(userId))) {
+      return null;
+    }
+    return this.social.allowedEventIds(userId);
+  }
+
+  /** En cas d'echec de la lecture, on suppose un blocage : le filtre complet reste le chemin sur. */
+  private async hasBlocksOrAssume(userId: string): Promise<boolean> {
+    try {
+      return await this.socialFeed.hasBlocks(userId);
+    } catch (error: unknown) {
+      const reason = error instanceof Error ? error.name : 'unknown error';
+      this.logger.warn(
+        `Block check failed for user ${userId} (${reason}), scanning the graph`,
+      );
+      return true;
+    }
   }
 }
