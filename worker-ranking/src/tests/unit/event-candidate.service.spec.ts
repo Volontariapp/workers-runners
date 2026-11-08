@@ -15,6 +15,7 @@ import {
   buildConfig,
   buildRankingEvent,
 } from '../factories/ranking.factory.js';
+import { createMockSocialFeedClient } from '../mocks/feed.mock.js';
 import {
   createMockEventClient,
   createMockFeedbackService,
@@ -24,6 +25,7 @@ import {
 
 describe('EventCandidateService (Unit)', () => {
   const social = createMockSocialClient();
+  const socialFeed = createMockSocialFeedClient();
   const events = createMockEventClient();
   const feedbackService = createMockFeedbackService();
   const locationService = createMockLocationService();
@@ -31,10 +33,12 @@ describe('EventCandidateService (Unit)', () => {
   let upcomingSpy: jest.SpiedFunction<typeof events.upcoming>;
   let byIdsSpy: jest.SpiedFunction<typeof events.byIds>;
   let findPositionSpy: jest.SpiedFunction<typeof locationService.findPosition>;
+  let hasBlocksSpy: jest.SpiedFunction<typeof socialFeed.hasBlocks>;
 
   beforeEach(() => {
     service = new EventCandidateService(
       social,
+      socialFeed,
       events,
       feedbackService,
       locationService,
@@ -54,6 +58,8 @@ describe('EventCandidateService (Unit)', () => {
     upcomingSpy = jest.spyOn(events, 'upcoming').mockResolvedValue([]);
     jest.spyOn(social, 'allowedEventIds').mockResolvedValue([]);
     jest.spyOn(social, 'friendTouchedEventIds').mockResolvedValue([]);
+    // Par defaut un blocage existe : les cas historiques passent par le filtre du graphe.
+    hasBlocksSpy = jest.spyOn(socialFeed, 'hasBlocks').mockResolvedValue(true);
   });
 
   afterEach(() => {
@@ -82,6 +88,76 @@ describe('EventCandidateService (Unit)', () => {
 
     expect(result.candidates.map((event) => event.id)).toEqual(['keep']);
     expect([...result.friendTouched]).toEqual(['keep']);
+  });
+
+  it('does not scan the graph when the user has no block and the exclusion lists are complete', async () => {
+    hasBlocksSpy.mockResolvedValue(false);
+    const allowedSpy = jest.spyOn(social, 'allowedEventIds');
+    upcomingSpy.mockResolvedValue([
+      buildRankingEvent('keep'),
+      buildRankingEvent('passed'),
+    ]);
+
+    const result = await service.collect(USER_ID, NOW);
+
+    expect(allowedSpy).not.toHaveBeenCalled();
+    expect(result.candidates.map((event) => event.id)).toEqual(['keep']);
+  });
+
+  it('still scans the graph when the user has a block', async () => {
+    hasBlocksSpy.mockResolvedValue(true);
+    const allowedSpy = jest
+      .spyOn(social, 'allowedEventIds')
+      .mockResolvedValue(['keep']);
+    upcomingSpy.mockResolvedValue([
+      buildRankingEvent('keep'),
+      buildRankingEvent('blocked'),
+    ]);
+
+    const result = await service.collect(USER_ID, NOW);
+
+    expect(allowedSpy).toHaveBeenCalledWith(USER_ID);
+    expect(result.candidates.map((event) => event.id)).toEqual(['keep']);
+  });
+
+  it('still scans the graph when an exclusion list reached its limit, since it may be truncated', async () => {
+    hasBlocksSpy.mockResolvedValue(false);
+    const allowedSpy = jest
+      .spyOn(social, 'allowedEventIds')
+      .mockResolvedValue(['keep']);
+    const cappedService = new EventCandidateService(
+      social,
+      socialFeed,
+      events,
+      feedbackService,
+      locationService,
+      buildConfig({ historySize: 1, excludeLimit: 2 }),
+    );
+    upcomingSpy.mockResolvedValue([
+      buildRankingEvent('keep'),
+      buildRankingEvent('beyond-the-limit'),
+    ]);
+
+    const result = await cappedService.collect(USER_ID, NOW);
+
+    expect(allowedSpy).toHaveBeenCalledWith(USER_ID);
+    expect(result.candidates.map((event) => event.id)).toEqual(['keep']);
+  });
+
+  it('falls back to the graph scan when the block check fails, rather than skipping the filter', async () => {
+    hasBlocksSpy.mockRejectedValue(new Error('ms-social unavailable'));
+    const allowedSpy = jest
+      .spyOn(social, 'allowedEventIds')
+      .mockResolvedValue(['keep']);
+    upcomingSpy.mockResolvedValue([
+      buildRankingEvent('keep'),
+      buildRankingEvent('blocked'),
+    ]);
+
+    const result = await service.collect(USER_ID, NOW);
+
+    expect(allowedSpy).toHaveBeenCalledWith(USER_ID);
+    expect(result.candidates.map((event) => event.id)).toEqual(['keep']);
   });
 
   it('reads the history from the first events of each list only and asks ms-event by ids', async () => {
