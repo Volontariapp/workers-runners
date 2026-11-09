@@ -1,6 +1,6 @@
 // trigger social
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
-import { loadConfig } from '@volontariapp/config';
+import { configureLogger, loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
 import { JobAuditRepository } from '@volontariapp/workers';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -39,7 +39,7 @@ import {
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
-Logger.setDefaultConfig({ format: config.logger.format });
+configureLogger(config.logger);
 const logger = new Logger({
   context: 'WORKER-SOCIAL',
   format: config.logger.format,

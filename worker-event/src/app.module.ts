@@ -1,5 +1,5 @@
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
-import { loadConfig } from '@volontariapp/config';
+import { configureLogger, loadConfig } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
 import { JobAuditRepository } from '@volontariapp/workers';
 import { JobAuditModel } from '@volontariapp/database';
@@ -40,7 +40,7 @@ import {
 
 const configDir = resolveConfigDirectory();
 const config = loadConfig(configDir, CustomConfig);
-Logger.setDefaultConfig({ format: config.logger.format });
+configureLogger(config.logger);
 const logger = new Logger({
   context: 'WORKER-EVENT',
   format: config.logger.format,
