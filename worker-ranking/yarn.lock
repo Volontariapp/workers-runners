@@ -3950,10 +3950,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@volontariapp/shared@npm:^0.18.1":
-  version: 0.18.1
-  resolution: "@volontariapp/shared@npm:0.18.1"
-  checksum: 10c0/cc0fc3e3bb8d2e9b8a90b813845b41781ed993dd882a2e2527438d2b07f3d9110c6c8216afc6c35808c7a7cb12eeb7b7e48fafe4c6c66157cb30db2c1c276f65
+"@volontariapp/shared@npm:^0.19.0":
+  version: 0.19.0
+  resolution: "@volontariapp/shared@npm:0.19.0"
+  checksum: 10c0/a18b506164618969343cf1402041b070ec69e9a500d9f4a60ee4499347f6b7d91c5757af7883e9630da2bb954e39d2045de2c10484238ae43a3cb2ff9db19038
   languageName: node
   linkType: hard
 
@@ -9109,7 +9109,7 @@ __metadata:
     "@volontariapp/messaging": "npm:^2.34.7"
     "@volontariapp/monitoring": "npm:^2.5.1"
     "@volontariapp/outbox": "npm:^0.10.44"
-    "@volontariapp/shared": "npm:^0.18.1"
+    "@volontariapp/shared": "npm:^0.19.0"
     "@volontariapp/testing": "npm:^1.0.3"
     "@volontariapp/workers": "npm:^1.4.42"
     bullmq: "npm:^5.76.5"
