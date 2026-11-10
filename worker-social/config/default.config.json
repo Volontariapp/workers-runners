@@ -32,5 +32,10 @@
     "authScheme": "basic",
     "realm": "neo4j"
   },
+  "social": {
+    "workerConcurrency": 4,
+    "limiterMax": 100,
+    "limiterDurationMs": 1000
+  },
   "port": 4105
 }

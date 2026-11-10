@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@volontariapp/logger';
-import {
-  JobMessagingType,
-  type IFollowUserPayload,
-} from '@volontariapp/messaging';
-import type { Job } from 'bullmq';
+import { JobMessagingType, type JobRegistry } from '@volontariapp/messaging';
+import type { JobOf } from '@volontariapp/workers';
 import type { IJobHandler } from '../job-handler.interface.js';
 
 @Injectable()
@@ -16,10 +13,13 @@ export class FollowUserHandler implements IJobHandler<
   });
   readonly jobType = JobMessagingType.FOLLOW_USER;
 
-  async handle(job: Job<IFollowUserPayload>): Promise<void> {
-    const { followerId, followingId } = job.data;
+  async handle(job: JobOf<typeof JobMessagingType.FOLLOW_USER>): Promise<{
+    originalPayload: JobRegistry[typeof JobMessagingType.FOLLOW_USER];
+  }> {
+    const { followerId, followingId } = job.data.payload;
     this.logger.info('Following user', { followerId, followingId });
     await Promise.resolve();
     this.logger.info('User followed successfully', { followerId });
+    return { originalPayload: job.data.payload };
   }
 }
