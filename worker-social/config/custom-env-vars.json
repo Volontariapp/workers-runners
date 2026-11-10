@@ -24,5 +24,10 @@
     "password": "NEO4J_PASSWORD",
     "database": "NEO4J_DATABASE"
   },
+  "social": {
+    "workerConcurrency": "SOCIAL_WORKER_CONCURRENCY",
+    "limiterMax": "SOCIAL_WORKER_LIMITER_MAX",
+    "limiterDurationMs": "SOCIAL_WORKER_LIMITER_DURATION_MS"
+  },
   "port": "PORT"
 }

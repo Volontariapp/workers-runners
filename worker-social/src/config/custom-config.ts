@@ -1,4 +1,10 @@
-import { IsDefined, ValidateNested, IsString } from 'class-validator';
+import {
+  IsDefined,
+  ValidateNested,
+  IsString,
+  IsNumber,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import {
   BaseConfig,
@@ -14,6 +20,26 @@ export class WorkerAuthConfig {
 
   @IsDefined()
   internalExpiresIn!: string | number;
+}
+
+export class SocialWorkerConfig {
+  /** Jobs traites en parallele sur la file social (SOCIAL_WORKER_CONCURRENCY). */
+  @IsDefined()
+  @IsNumber()
+  @Min(1)
+  workerConcurrency!: number;
+
+  /** Jobs traites au plus par fenetre du limiteur BullMQ (SOCIAL_WORKER_LIMITER_MAX). */
+  @IsDefined()
+  @IsNumber()
+  @Min(1)
+  limiterMax!: number;
+
+  /** Duree de la fenetre du limiteur, en ms (SOCIAL_WORKER_LIMITER_DURATION_MS). */
+  @IsDefined()
+  @IsNumber()
+  @Min(1)
+  limiterDurationMs!: number;
 }
 
 export class CustomConfig extends BaseConfig {
@@ -36,4 +62,9 @@ export class CustomConfig extends BaseConfig {
   @ValidateNested()
   @Type(() => Neo4jConfig)
   neo4j!: Neo4jConfig;
+
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => SocialWorkerConfig)
+  social!: SocialWorkerConfig;
 }

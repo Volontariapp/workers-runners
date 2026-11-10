@@ -1,12 +1,12 @@
 // trigger social
 import { Module, type OnApplicationShutdown, Inject } from '@nestjs/common';
-import { configureLogger, loadConfig } from '@volontariapp/config';
+import { configureLogger } from '@volontariapp/config';
 import { Logger } from '@volontariapp/logger';
 import { JobAuditRepository } from '@volontariapp/workers';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getDataSourceToken, getRepositoryToken } from '@nestjs/typeorm';
 import { EventQueueModel, JobAuditModel } from '@volontariapp/database';
 import { CustomConfig } from './config/custom-config.js';
-import { resolveConfigDirectory } from './config/resolve-config-directory.js';
+import { config } from './config/runtime-config.js';
 import { initDatabase } from './providers/database.provider.js';
 import { initRedis } from './providers/redis.provider.js';
 import {
@@ -19,6 +19,7 @@ import {
   NestNeo4jProvider,
 } from '@volontariapp/bridge-nest';
 import { FollowUserHandler } from './workers/handlers/follow-user.handler.js';
+import { SocialEdgeApplyHandler } from './workers/handlers/social-edge-apply.handler.js';
 import { SocialWorker } from './workers/social.worker.js';
 import { BullModule } from '@nestjs/bullmq';
 import { SocialQueue } from '@volontariapp/messaging';
@@ -35,10 +36,11 @@ import {
   Neo4jInteractionRepository,
   Neo4jParticipationRepository,
   Neo4jEventPostLinkRepository,
+  Neo4jSocialEdgeRepository,
+  PostgresSocialEdgeRepository,
+  SocialEdgeApplyService,
 } from '@volontariapp/domain-social';
 
-const configDir = resolveConfigDirectory();
-const config = loadConfig(configDir, CustomConfig);
 configureLogger(config.logger);
 const logger = new Logger({
   context: 'WORKER-SOCIAL',
@@ -100,7 +102,14 @@ const logger = new Logger({
       },
       inject: [PostgresProvider],
     },
+    {
+      // SocialEdgeApplyService injecte le DataSource par son jeton par defaut (@InjectDataSource()).
+      provide: getDataSourceToken(),
+      useFactory: (postgres: PostgresProvider) => postgres.getDriver(),
+      inject: [PostgresProvider],
+    },
     FollowUserHandler,
+    SocialEdgeApplyHandler,
     SocialWorker,
     SocialUserService,
     RelationshipService,
@@ -114,6 +123,9 @@ const logger = new Logger({
     Neo4jInteractionRepository,
     Neo4jParticipationRepository,
     Neo4jEventPostLinkRepository,
+    Neo4jSocialEdgeRepository,
+    PostgresSocialEdgeRepository,
+    SocialEdgeApplyService,
   ],
 })
 export class AppModule implements OnApplicationShutdown {
