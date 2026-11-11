@@ -5,12 +5,9 @@ import { PostgresBridgeHealthProvider } from '@volontariapp/health-check';
 import { JobAuditEntity } from '@volontariapp/workers';
 import { JobAuditModel } from '@volontariapp/database';
 import { databaseMapper } from '@volontariapp/database';
-import {
-  FileModel,
-  ReleasedEntityModel,
-  registerStorageMappings,
-} from '@volontariapp/domain-storage';
+import { registerStorageMappings } from '@volontariapp/domain-storage';
 import { instanceToPlain } from 'class-transformer';
+import { STORAGE_WORKER_ENTITIES } from './storage-worker-entities.js';
 
 // Register the bidirectional mapper once at startup
 databaseMapper.registerBidirectional(JobAuditModel, JobAuditEntity);
@@ -22,7 +19,7 @@ export async function initDatabase(
 ): Promise<PostgresProvider> {
   const dbProvider = new PostgresProvider({
     ...(instanceToPlain(config) as IPostgresConfig),
-    entities: [JobAuditModel, FileModel, ReleasedEntityModel],
+    entities: STORAGE_WORKER_ENTITIES,
     synchronize: false,
   });
 
